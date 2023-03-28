@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "858374053481",
+    "project_id": "odoo-task-manager",
+    "storage_bucket": "odoo-task-manager.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:858374053481:android:7c1e3a0d089abb18e28cf8",
+        "android_client_info": {
+          "package_name": "com.example.testing"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "858374053481-vo6umu0c13kuj4ah6jq64ketsejon9o0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA9SLeXrae2wN_WUuzuPFDFBUzdlJ6cxw0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "858374053481-vo6umu0c13kuj4ah6jq64ketsejon9o0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

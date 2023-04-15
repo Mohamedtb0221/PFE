@@ -28,9 +28,9 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  void showflushbar(String message) {
+  void showflushbar(String title, String message) {
     Flushbar(
-      title: 'Warning !',
+      title: title,
       message: message,
       duration: const Duration(seconds: 3),
       padding: const EdgeInsets.all(20),
@@ -48,7 +48,7 @@ class _LoginPageState extends State<LoginPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    createBox();
+    createBox();    
   }
 
   @override
@@ -106,6 +106,14 @@ class _LoginPageState extends State<LoginPage> {
                   duration: const Duration(milliseconds: 500),
                   delay: const Duration(milliseconds: 1100),
                   child: MyButton(
+                    text: const Text(
+                      " Login",
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 19,
+                          letterSpacing: 1),
+                    ),
                     onTap: () async {
                       name = usernameController.text;
                       pass = passwordController.text;
@@ -122,7 +130,8 @@ class _LoginPageState extends State<LoginPage> {
                       } on OdooException catch (e) {
                       } finally {
                         if (x == null) {
-                          showflushbar("wrong password or username ");
+                          showflushbar(
+                              "Error !", "wrong password or username ");
                         } else {
                           print('connected');
                           if (isChecked!) {
@@ -132,9 +141,9 @@ class _LoginPageState extends State<LoginPage> {
                           Get.off(() => const Swipe(),
                               transition: Transition.downToUp);
                           Fluttertoast.showToast(
-                              msg: "Connected",
-                              toastLength: Toast.LENGTH_SHORT,
-                              );
+                            msg: "Connected",
+                            toastLength: Toast.LENGTH_SHORT,
+                          );
                         }
                       }
                     },
@@ -163,5 +172,4 @@ class _LoginPageState extends State<LoginPage> {
       passwordController.text = box1.get('password');
     }
   }
-  
 }

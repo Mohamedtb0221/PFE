@@ -1,45 +1,56 @@
 import 'dart:convert';
-
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_nav_bar/google_nav_bar.dart';
+import 'package:intl/intl.dart';
 import 'package:testing/pages/home.dart';
 import 'package:testing/pages/login.dart';
 import 'package:testing/pages/pagethree.dart';
 import 'package:testing/pages/pagetwo.dart';
 import 'package:http/http.dart' as http;
+import 'package:testing/pages/profil.dart';
 
 final FirebaseMessaging messaging = FirebaseMessaging.instance;
-  getMessage() {
-    FirebaseMessaging.onMessage.listen((event) {
-      print(event.notification!.title);
-      print(event.notification!.body);
-      print(event.data["name"]);
-    });
-  }
+List<dynamic> recievedNotifications = [];
+getMessage() {
+  FirebaseMessaging.onMessage.listen((event) {
+    var day = DateFormat('dd-MM-yyyy').format(DateTime.now());
+    var time = DateFormat('hh:mm a').format(DateTime.now());
+    dynamic data = {
+      'title': event.notification!.title,
+      'body': event.notification!.body,
+      'day':day,
+      'time':time,
+    };
+    recievedNotifications.insert(0,data);
+    box2.put('notification', recievedNotifications);    
+    print(event.notification!.title);
+    print(event.notification!.body);
+  });
+}
 
-    sendNotificaton(String title, String body,String topic) async {
-    await http.post(
-      Uri.parse("https://fcm.googleapis.com/fcm/send"),
-      headers: <String, String>{
-        'Content-Type': 'application/json',
-        'Authorization': 'key=$serverToken',
-      },
-      body: jsonEncode(
-        <String, dynamic>{
-          'notification': <String, dynamic>{'body': body, 'title': title},
-          'priority': 'high',
-          'data': <String, dynamic>{
-            'click_action': 'FLUTTER_NOTIFICATION_CLICK',
-            'id': '1',
-            "name": "mohamed"
-          },
-          'to': "/topics/$topic",
+sendNotificaton(String title, String body, String topic) async {
+  await http.post(
+    Uri.parse("https://fcm.googleapis.com/fcm/send"),
+    headers: <String, String>{
+      'Content-Type': 'application/json',
+      'Authorization': 'key=$serverToken',
+    },
+    body: jsonEncode(
+      <String, dynamic>{
+        'notification': <String, dynamic>{'body': body, 'title': title},
+        'priority': 'high',
+        'data': <String, dynamic>{
+          'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+          'id': '1',
+          "name": "mohamed"
         },
-      ),
-    );
-  }
+        'to': "/topics/$topic",
+      },
+    ),
+  );
+}
 
 class Swipe extends StatefulWidget {
   const Swipe({super.key});
@@ -55,28 +66,26 @@ var serverToken =
 
 class _SwipeState extends State<Swipe> {
   @override
-  void initState() { 
-    UserTopics();   
+  void initState() {
+    UserTopics();
     messaging.getToken().then((value) {
       print(value);
     });
-    //getMessage();
+    getMessage();
+    
     super.initState();
     setState(() {
       selectedIndex = 0;
     });
   }
 
-
-
   UserTopics() async {
     List projects = await fetchProjects();
     for (var project in projects) {
       print(project['id']);
       messaging.subscribeToTopic(project['id'].toString());
-    }    
+    }
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -94,28 +103,22 @@ class _SwipeState extends State<Swipe> {
               padding: const EdgeInsets.all(16),
               tabMargin: const EdgeInsets.all(1),
               gap: 8,
-              tabs: [
-                const GButton(
+              tabs: const [
+                GButton(
                   icon: Icons.home,
                   text: "Home",
                 ),
-                const GButton(
+                GButton(
                   icon: Icons.work,
                   text: 'Projects',
                 ),
-                const GButton(
+                GButton(
                   icon: Icons.contact_page,
                   text: 'Contacts',
                 ),
                 GButton(
-                  icon: Icons.logout,
-                  text: 'Log out',
-                  onPressed: () {
-                    Get.offAll(() => const LoginPage(),
-                        transition: Transition.downToUp);
-
-                    print(selectedIndex);
-                  },
+                  icon: Icons.person,
+                  text: 'Profil',
                 ),
               ],
               selectedIndex: selectedIndex,
@@ -141,6 +144,7 @@ class _SwipeState extends State<Swipe> {
             const MyApp(),
             pagethree(),
             pagetwo(),
+            const ProfilPage(),
           ],
         ));
   }

@@ -1,9 +1,9 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'home.dart';
-
-
+import 'notifications_history.dart';
 
 class pagetwo extends StatefulWidget {
   pagetwo({super.key});
@@ -62,21 +62,23 @@ class _pagetwoState extends State<pagetwo> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                //const Divider(endIndent: 40,indent: 40,),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    Text(record['email'] != false
-                        ? "Email : ${record['email']}"
-                        : 'Email : none'),
+                    Expanded(
+                      child: Text(
+                        record['email'] != false
+                            ? "Email : ${record['email']}"
+                            : 'Email : none',
+                      ),
+                    ),
                   ],
                 ),
-
                 const SizedBox(
                   height: 25,
                 ),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 0.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
@@ -97,18 +99,21 @@ class _pagetwoState extends State<pagetwo> {
                     IconButton(
                       icon: const Icon(Icons.mail_rounded, size: 25),
                       onPressed: () async {
-                      String email = Uri.encodeComponent("mm0356005@gmail.com");
-                      String subject = Uri.encodeComponent("Hello Flutter");
-                      String body = Uri.encodeComponent("Hi! I'm Flutter Developer");
-                      print(subject); //output: Hello%20Flutter
-                      Uri mail = Uri.parse("mailto:$email?subject=$subject&body=$body");
-                      if (await launchUrl(mail)) {
+                        String email =
+                            Uri.encodeComponent("mm0356005@gmail.com");
+                        String subject = Uri.encodeComponent("Hello Flutter");
+                        String body =
+                            Uri.encodeComponent("Hi! I'm Flutter Developer");
+                        print(subject); //output: Hello%20Flutter
+                        Uri mail = Uri.parse(
+                            "mailto:$email?subject=$subject&body=$body");
+                        if (await launchUrl(mail)) {
                           //email app opened
                           print("opening");
-                      }else{
+                        } else {
                           //email app is not opened
                           print("won't open");
-                      }
+                        }
                       },
                     ),
                     IconButton(
@@ -117,7 +122,6 @@ class _pagetwoState extends State<pagetwo> {
                         size: 25,
                       ),
                       onPressed: () {
-                        
                         // ignore: deprecated_member_use
                         launch("tel://${record['phone']}");
                       },
@@ -138,7 +142,10 @@ class _pagetwoState extends State<pagetwo> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("contacts odoo"),
+        title: const Text(
+          "Contacts",
+          style: TextStyle(fontWeight: FontWeight.bold),
+        ),
         centerTitle: true,
         backgroundColor: const Color.fromARGB(
           255,
@@ -146,6 +153,17 @@ class _pagetwoState extends State<pagetwo> {
           100,
           156,
         ),
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right:8.0),
+            child: IconButton(
+                onPressed: () {
+                  
+                      Get.to(() =>NotificationHistory());
+                },
+                icon: Icon(Icons.notifications)),
+          )
+        ],
       ),
       body: Center(
         child: RefreshIndicator(
@@ -212,14 +230,16 @@ class _pagetwoState extends State<pagetwo> {
                     if (snapshot.hasData) {
                       contactsList = snapshot.data;
                       List<dynamic> filteredData = contactsList
-                          .where((element) => element['name'].toString()
+                          .where((element) => element['name']
+                              .toString()
                               .toLowerCase()
                               .contains(searchWord))
                           .toList();
                       return ListView.builder(
                         itemCount: filteredData.length,
                         itemBuilder: (context, index) {
-                          final record = filteredData[index] as Map<String, dynamic>;
+                          final record =
+                              filteredData[index] as Map<String, dynamic>;
                           return FadeInUp(child: buildListItem(record));
                         },
                       );
@@ -228,7 +248,7 @@ class _pagetwoState extends State<pagetwo> {
                         return const Text("something went wrong");
                       }
                       return const Center(
-                        child:  CircularProgressIndicator(
+                        child: CircularProgressIndicator(
                           color: Color.fromARGB(255, 120, 100, 156),
                         ),
                       );

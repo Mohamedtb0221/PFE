@@ -2,7 +2,9 @@ import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:testing/pages/home.dart';
+import 'package:testing/pages/notifications_history.dart';
 import 'package:testing/pages/tasks.dart';
+import 'package:testing/pages/tasksswipe.dart';
 import 'add_project.dart';
 
 int ProjectId = 0;
@@ -67,11 +69,13 @@ class _pagethreeState extends State<pagethree> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
+              
               record['name'].toString(),
               style: const TextStyle(
                   fontWeight: FontWeight.bold,
-                  fontSize: 17,
+                  fontSize: 15,
                   color: Colors.white),
+                  overflow: TextOverflow.ellipsis,
             ),
             Text(
               'from : ${record['date_start'] != false ? record['date_start'] : '---'}',
@@ -90,27 +94,27 @@ class _pagethreeState extends State<pagethree> {
       ),
     );
   }
-
+  var record;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 120, 100, 156),
         title: const Text(
-          "projects odoo",
+          "Projects",
           style: TextStyle(
               fontWeight: FontWeight.bold,),
         ),
         centerTitle: true,
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right: 10.0),
+            padding: const EdgeInsets.only(right:8.0),
             child: IconButton(
                 onPressed: () {
-                  Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => add_project()));
+                  
+                      Get.to(() =>NotificationHistory());
                 },
-                icon: const Icon(Icons.add_task)),
+                icon: Icon(Icons.notifications)),
           )
         ],
       ),
@@ -122,7 +126,7 @@ class _pagethreeState extends State<pagethree> {
             future: fetchProjects(),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
-                return GridView.builder(
+                 return GridView.builder(
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
                   ),
@@ -135,7 +139,7 @@ class _pagethreeState extends State<pagethree> {
                         onTap: () {
                           print(record['id']);
                           ProjectId = record['id'];
-                          Get.to(() => Tasks());
+                          Get.to(() => TasksSwipe());
                         },
                       ),
                     );
@@ -154,7 +158,9 @@ class _pagethreeState extends State<pagethree> {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {},
+        onPressed: () {
+          Get.to(add_project());
+        },
         backgroundColor: Colors.white,
         tooltip: 'Increment',
         elevation: 30,
@@ -172,10 +178,10 @@ class _pagethreeState extends State<pagethree> {
   }
 
   Future<void> refresh() async {
-    await Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => pagethree()),
-    );
+    record= await fetchProjects();
+    setState(()  {
+      record=record;
+    });
     print("refresh");
   }
 }

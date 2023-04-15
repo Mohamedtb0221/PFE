@@ -1,12 +1,15 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:intl/intl.dart';
 import 'package:testing/pages/controller/controller.dart';
 import 'package:testing/pages/home.dart';
 import 'package:testing/pages/pagethree.dart';
 import 'package:testing/pages/swipe.dart';
+import 'package:testing/pages/tasksswipe.dart';
 import '../components/my_formtextfield.dart';
 import '../components/my_textfield.dart';
 import 'add_project.dart';
@@ -26,41 +29,19 @@ class _TasksState extends State<Tasks> {
   TextEditingController taskDescription1 = TextEditingController();
   TextEditingController taskdeadline = TextEditingController();
 
-  Future<dynamic> fetchtasks() async {
-    await check();
-    var res = await orpc.callKw({
-      'model': 'project.task',
-      'method': 'search_read',
-      'args': [],
-      'kwargs': {
-        'context': {'bin_size': true},
-        'domain': [
-          ['project_id', '=', ProjectId],
-          ['user_ids', 'in', session.userId]
-        ],
-        'fields': [
-          'id',
-          'name',
-          'create_date',
-          'stage_id',
-          'description',
-          'date_deadline'
-        ],
-        'limit': 10,
-      }
-    });
-
-    return res;
-  }
-
-  Future addTask(String name, String description,String deadline) async {
+  Future addTask(String name, String description, String deadline) async {
     await check();
 
     var res = await orpc.callKw({
       'model': 'project.task',
       'method': 'create',
       'args': [
-        {'name': name, 'description': description,'date_deadline':deadline, 'project_id': ProjectId},
+        {
+          'name': name,
+          'description': description,
+          'date_deadline': deadline,
+          'project_id': ProjectId
+        },
       ],
       'domain': [],
       'kwargs': {}
@@ -87,42 +68,47 @@ class _TasksState extends State<Tasks> {
     });
   }
 
-  Widget builditem(Map<String, dynamic> record) {
+  Widget builditem(Map<String, dynamic> record,
+      SpeedDialDirection OpenDirection, double bottomMargin) {
     return Card(
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
       ),
-      elevation: 20,
-      margin: const EdgeInsets.only(top: 10, left: 20, right: 20, bottom: 10),
-      color: const Color.fromARGB(255, 120, 100, 156).withOpacity(0.6),
+      elevation: 0,
+      margin:
+          EdgeInsets.only(top: 10, left: 20, right: 20, bottom: bottomMargin),
+      color: const Color.fromARGB(255, 120, 100, 156).withOpacity(0.8),
       child: Padding(
         padding: const EdgeInsets.all(15),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  record['name'].toString(),
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 17,
-                      color: Colors.white),
-                ),
-                Text(
-                  'created at : ${record['create_date'] != false ? DateFormat.yMd().format(DateTime.parse(record['create_date'])) : '/'}',
-                  style: const TextStyle(fontSize: 12, color: Colors.white70),
-                ),
-                Text(
-                  'ends at : ${record['date_deadline'] != false ? DateFormat.yMd().format(DateTime.parse(record['date_deadline'])) : '/'}',
-                  style: const TextStyle(fontSize: 12, color: Colors.white70),
-                ),
-              ],
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    record['name'].toString(),
+                    style: const TextStyle(
+                        overflow: TextOverflow.ellipsis,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 17,
+                        color: Colors.white),
+                  ),
+                  Text(
+                    'created at : ${record['create_date'] != false ? DateFormat('dd/MM/yyyy').format(DateTime.parse(record['create_date'])) : '/'}',
+                    style: const TextStyle(fontSize: 12, color: Colors.white70),
+                  ),
+                  Text(
+                    'ends at : ${record['date_deadline'] != false ? DateFormat('dd/MM/yyyy').format(DateTime.parse(record['date_deadline'])) : '/'}',
+                    style: const TextStyle(fontSize: 12, color: Colors.white70),
+                  ),
+                ],
+              ),
             ),
             SpeedDial(
-              direction: SpeedDialDirection.down,
+              direction: OpenDirection,
               spacing: 7,
               spaceBetweenChildren: 7,
               animationCurve: Curves.easeInOut,
@@ -137,22 +123,63 @@ class _TasksState extends State<Tasks> {
                   child: const Icon(Icons.delete),
                   label: "delete",
                   onTap: () async {
-                    await check();
-                    var res = await orpc.callKw({
-                      'model': 'project.task',
-                      'method': 'unlink',
-                      'args': [
-                        [record['id']],
-                      ],
-                      'domain': [],
-                      'kwargs': {}
-                    });
-                    print(record);
-                    setState(() {
-                      tasksList.remove(record);
-                    });
-                    sendNotificaton("Task Removed", "task removed from project : $ProjectId", ProjectId.toString());
-                    return res;
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        return AlertDialog(
+                          title: const Text(
+                            "Delete this task ?",
+                            style: TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold),
+                          ),
+                          actions: [
+                            TextButton(
+                                onPressed: () {
+                                  Get.back();
+                                },
+                                child: const Text(
+                                  "No",
+                                  style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold),
+                                )),
+                            TextButton(
+                                onPressed: () async {
+                                  await check();
+                                  var res = await orpc.callKw({
+                                    'model': 'project.task',
+                                    'method': 'unlink',
+                                    'args': [
+                                      [record['id']],
+                                    ],
+                                    'domain': [],
+                                    'kwargs': {}
+                                  });
+                                  
+                                  refresh();
+                                  sendNotificaton(
+                                      "Task Removed",
+                                      "task " +
+                                          record['name'] +
+                                          " removed from project : $ProjectId",
+                                      ProjectId.toString());
+                                  Fluttertoast.showToast(
+                                    msg: "Task removed",
+                                    toastLength: Toast.LENGTH_SHORT,
+                                  );
+                                  return res;
+                                },
+                                child: const Text(
+                                  "Yes",
+                                  style: TextStyle(
+                                      color: Colors.black,
+                                      fontWeight: FontWeight.bold),
+                                )),
+                          ],
+                        );
+                      },
+                    );
                   },
                 ),
                 SpeedDialChild(
@@ -172,61 +199,78 @@ class _TasksState extends State<Tasks> {
                               key: formKey,
                               child: Container(
                                 height: 250,
-                                child: Column(
-                                  children: [
-                                    MyTextFormField(
-                                      controller: taskName1,
-                                      hintText: 'Task Name',
-                                      obscureText: false,
-                                    ),
-                                    const SizedBox(
-                                      height: 20,
-                                    ),
-                                    MyTextFormField(
-                                      controller: taskDescription1,
-                                      hintText: 'Task Description',
-                                      obscureText: false,
-                                    ),
-                                    const SizedBox(
-                                      height: 30,
-                                    ),
-                                    MyTextFormField(
-                            controller: taskdeadline,
-                            hintText: 'Task deadline',
-                            obscureText: false,
-                            suffixIcon: IconButton(
-                              icon: const Icon(Icons.date_range),
-                              onPressed: () {
-                                showDatePicker(
-                                    builder: (context, child) {
-                                      return Theme(
-                                        data: Theme.of(context).copyWith(
-                                          colorScheme:const ColorScheme.light(
-                                            primary: Color.fromARGB(255, 120, 100, 156), // <-- SEE HERE
-                                            
-                                          ),
-                                          textButtonTheme: TextButtonThemeData(
-                                            style: TextButton.styleFrom(
-                                              
-                                              primary:const Color.fromARGB(255, 120, 100, 156), // button text color
-                                            ),
-                                          ),
+                                child: SingleChildScrollView(
+                                  child: Column(
+                                    children: [
+                                      MyTextFormField(
+                                        controller: taskName1,
+                                        hintText: 'Task Name',
+                                        obscureText: false,
+                                      ),
+                                      const SizedBox(
+                                        height: 20,
+                                      ),
+                                      MyTextFormField(
+                                        controller: taskDescription1,
+                                        hintText: 'Task Description',
+                                        obscureText: false,
+                                      ),
+                                      const SizedBox(
+                                        height: 30,
+                                      ),
+                                      MyTextFormField(
+                                        controller: taskdeadline,
+                                        hintText: 'Task deadline',
+                                        obscureText: false,
+                                        suffixIcon: IconButton(
+                                          icon: const Icon(Icons.date_range),
+                                          onPressed: () {
+                                            showDatePicker(
+                                                    builder: (context, child) {
+                                                      return Theme(
+                                                        data: Theme.of(context)
+                                                            .copyWith(
+                                                          colorScheme:
+                                                              const ColorScheme
+                                                                  .light(
+                                                            primary: Color.fromARGB(
+                                                                255,
+                                                                120,
+                                                                100,
+                                                                156), // <-- SEE HERE
+                                                          ),
+                                                          textButtonTheme:
+                                                              TextButtonThemeData(
+                                                            style: TextButton
+                                                                .styleFrom(
+                                                              primary: const Color
+                                                                      .fromARGB(
+                                                                  255,
+                                                                  120,
+                                                                  100,
+                                                                  156), // button text color
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        child: child!,
+                                                      );
+                                                    },
+                                                    context: context,
+                                                    initialDate: DateTime.now(),
+                                                    firstDate: DateTime(2000),
+                                                    lastDate: DateTime(2035))
+                                                .then((value) {
+                                              setState(() {
+                                                taskdeadline.text =
+                                                    DateFormat('yyyy-MM-dd')
+                                                        .format(value!);
+                                              });
+                                            });
+                                          },
                                         ),
-                                        child: child!,
-                                      );
-                                    },
-                                    context: context,
-                                    initialDate: DateTime.now(),
-                                    firstDate: DateTime(2000),
-                                    lastDate: DateTime(2035)).then((value){
-                                      setState(() {
-                                        taskdeadline.text=DateFormat('yyyy-MM-dd').format(value!);
-                                      });
-                                    });
-                              },
-                            ),
-                          ),
-                                  ],
+                                      ),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ),
@@ -258,21 +302,28 @@ class _TasksState extends State<Tasks> {
                                           record['id'],
                                           {
                                             'name': taskName1.text,
-                                            'description': taskDescription1.text,
-                                            'date_deadline':taskdeadline.text
+                                            'description':
+                                                taskDescription1.text,
+                                            'date_deadline': taskdeadline.text
                                           }
                                         ],
                                         'domain': [],
                                         'kwargs': {}
                                       });
-                                      setState(() {
-                                        record.update(
-                                            "name", (value) => taskName1.text);
-                                      });
+                                      refresh();
 
-                                      print(record);
+                                      sendNotificaton(
+                                          "Task Updated",
+                                          "task " +
+                                              record['name'] +
+                                              " has been updated in project : $ProjectId",
+                                          ProjectId.toString());
+                                      Fluttertoast.showToast(
+                                        msg: "Task modified",
+                                        toastLength: Toast.LENGTH_SHORT,
+                                      );
+
                                       Navigator.pop(context);
-
                                       return res;
                                     } else {
                                       print("error");
@@ -326,19 +377,19 @@ class _TasksState extends State<Tasks> {
       ),
     );
   }
+
   @override
   void initState() {
     // TODO: implement initState
-    getMessage();
   }
 
-  List tasksList = [];
+  var tasksList = [];
   String searchWord = "";
   TextEditingController searchController = TextEditingController();
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
+      /*appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 120, 100, 156),
         title: const Text(
           "My Tasks",
@@ -354,72 +405,81 @@ class _TasksState extends State<Tasks> {
                 onPressed: () {}, icon: const Icon(Iconsax.task_square)),
           )
         ],
-      ),
+      ),*/
       body: Center(
         child: RefreshIndicator(
           color: const Color.fromARGB(255, 120, 100, 156),
           onRefresh: refresh,
           child: Column(
             children: [
-              Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 0, vertical: 50),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                    child: TextField(
-                      cursorColor: const Color.fromARGB(255, 120, 100, 156),
-                      obscureText: false,
-                      decoration: InputDecoration(
-                          focusedErrorBorder: const OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(30)),
-                            borderSide: BorderSide(
-                                color: Color.fromARGB(255, 120, 100, 156),
-                                width: 2),
-                          ),
-                          errorBorder: const OutlineInputBorder(
-                            borderSide: BorderSide(
-                                color: Color.fromARGB(255, 120, 100, 156),
-                                width: 2),
-                          ),
-                          errorStyle: const TextStyle(
-                              fontSize: 13,
-                              color: Color.fromARGB(255, 120, 100, 156)),
-                          enabledBorder: const OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(30)),
-                            borderSide: BorderSide(color: Colors.white),
-                          ),
-                          focusedBorder: const OutlineInputBorder(
-                            borderRadius: BorderRadius.all(Radius.circular(30)),
-                            borderSide: BorderSide(
+              Container(
+                padding: EdgeInsets.only(top: Get.height * 0.05),
+                child: Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 0, vertical: 50),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 25.0,
+                      ),
+                      child: TextField(
+                        cursorColor: const Color.fromARGB(255, 120, 100, 156),
+                        obscureText: false,
+                        decoration: InputDecoration(
+                            focusedErrorBorder: const OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(30)),
+                              borderSide: BorderSide(
+                                  color: Color.fromARGB(255, 120, 100, 156),
+                                  width: 2),
+                            ),
+                            errorBorder: const OutlineInputBorder(
+                              borderSide: BorderSide(
+                                  color: Color.fromARGB(255, 120, 100, 156),
+                                  width: 2),
+                            ),
+                            errorStyle: const TextStyle(
+                                fontSize: 13,
                                 color: Color.fromARGB(255, 120, 100, 156)),
-                          ),
-                          prefixIcon: const Icon(
-                            Icons.search,
-                            color: Color.fromARGB(255, 120, 100, 156),
-                          ),
-                          fillColor: Colors.grey.shade200,
-                          filled: true,
-                          labelText: 'Search',
-                          labelStyle: const TextStyle(
+                            enabledBorder: const OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(30)),
+                              borderSide: BorderSide(color: Colors.white),
+                            ),
+                            focusedBorder: const OutlineInputBorder(
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(30)),
+                              borderSide: BorderSide(
+                                  color: Color.fromARGB(255, 120, 100, 156)),
+                            ),
+                            prefixIcon: const Icon(
+                              Icons.search,
                               color: Color.fromARGB(255, 120, 100, 156),
-                              fontSize: 15),
-                          hintText: 'Search',
-                          hintStyle:
-                              const TextStyle(color: Colors.transparent)),
-                      onChanged: (value) {
-                        setState(() {
-                          searchWord = value;
-                        });
-                      },
-                      //controller: searchController,
-                    ),
-                  )),
+                            ),
+                            fillColor: Colors.grey.shade200,
+                            filled: true,
+                            labelText: 'Search',
+                            labelStyle: const TextStyle(
+                                color: Color.fromARGB(255, 120, 100, 156),
+                                fontSize: 15),
+                            hintText: 'Search',
+                            hintStyle:
+                                const TextStyle(color: Colors.transparent)),
+                        onChanged: (value) {
+                          setState(() {
+                            searchWord = value;
+                          });
+                        },
+                        //controller: searchController,
+                      ),
+                    )),
+              ),
               Expanded(
                 child: FutureBuilder(
                   future: fetchtasks(),
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
                       tasksList = snapshot.data;
+                      
                       List<dynamic> filteredData = tasksList
                           .where((element) => element['name']
                               .toLowerCase()
@@ -428,10 +488,23 @@ class _TasksState extends State<Tasks> {
                       return ListView.builder(
                         itemCount: filteredData.length,
                         itemBuilder: (context, index) {
+                          //print(filteredData.length);
                           final record =
                               filteredData[index] as Map<String, dynamic>;
-
-                          return FadeInUp(child: builditem(record));
+                          
+                          //print(record);
+                          return FadeInUp(
+                              child: index >= filteredData.length - 1
+                                  ? index == filteredData.length - 1
+                                      ? builditem(
+                                          record, SpeedDialDirection.up, 70.0)
+                                      : builditem(
+                                          record, SpeedDialDirection.up, 20.0)
+                                  : index == filteredData.length - 1
+                                      ? builditem(
+                                          record, SpeedDialDirection.down, 70.0)
+                                      : builditem(record,
+                                          SpeedDialDirection.down, 20.0));
                         },
                       );
                     } else {
@@ -462,61 +535,77 @@ class _TasksState extends State<Tasks> {
                     key: formKey,
                     child: Container(
                       height: 250,
-                      child: Column(
-                        children: [
-                          MyTextFormField(
-                            controller: taskName,
-                            hintText: 'Task Name',
-                            obscureText: false,
-                          ),
-                          const SizedBox(
-                            height: 20,
-                          ),
-                          MyTextFormField(
-                            controller: taskDescription,
-                            hintText: 'Task Description',
-                            obscureText: false,
-                          ),
-                          const SizedBox(
-                            height: 40,
-                          ),
-                          MyTextFormField(
-                            controller: taskdeadline,
-                            hintText: 'Task deadline',
-                            obscureText: false,
-                            suffixIcon: IconButton(
-                              icon: const Icon(Icons.date_range),
-                              onPressed: () {
-                                showDatePicker(
-                                    builder: (context, child) {
-                                      return Theme(
-                                        data: Theme.of(context).copyWith(
-                                          colorScheme:const ColorScheme.light(
-                                            primary: Color.fromARGB(255, 120, 100, 156), // <-- SEE HERE
-                                            // <-- SEE HERE
-                                          ),
-                                          textButtonTheme: TextButtonThemeData(
-                                            style: TextButton.styleFrom(
-                                              // ignore: deprecated_member_use
-                                              primary:const Color.fromARGB(255, 120, 100, 156), // button text color
-                                            ),
-                                          ),
-                                        ),
-                                        child: child!,
-                                      );
-                                    },
-                                    context: context,
-                                    initialDate: DateTime.now(),
-                                    firstDate: DateTime(2000),
-                                    lastDate: DateTime(2035)).then((value){
-                                      setState(() {
-                                        taskdeadline.text=DateFormat('yyyy-MM-dd').format(value!);
-                                      });
-                                    });
-                              },
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            MyTextFormField(
+                              controller: taskName,
+                              hintText: 'Task Name',
+                              obscureText: false,
                             ),
-                          ),
-                        ],
+                            const SizedBox(
+                              height: 20,
+                            ),
+                            MyTextFormField(
+                              controller: taskDescription,
+                              hintText: 'Task Description',
+                              obscureText: false,
+                            ),
+                            const SizedBox(
+                              height: 40,
+                            ),
+                            MyTextFormField(
+                              controller: taskdeadline,
+                              hintText: 'Task deadline',
+                              obscureText: false,
+                              suffixIcon: IconButton(
+                                icon: const Icon(Icons.date_range),
+                                onPressed: () {
+                                  showDatePicker(
+                                          builder: (context, child) {
+                                            return Theme(
+                                              data: Theme.of(context).copyWith(
+                                                colorScheme:
+                                                    const ColorScheme.light(
+                                                  primary: Color.fromARGB(
+                                                      255,
+                                                      120,
+                                                      100,
+                                                      156), // <-- SEE HERE
+                                                  // <-- SEE HERE
+                                                ),
+                                                textButtonTheme:
+                                                    TextButtonThemeData(
+                                                  style: TextButton.styleFrom(
+                                                    // ignore: deprecated_member_use
+                                                    primary: const Color
+                                                            .fromARGB(
+                                                        255,
+                                                        120,
+                                                        100,
+                                                        156), // button text color
+                                                  ),
+                                                ),
+                                              ),
+                                              child: child!,
+                                            );
+                                          },
+                                          context: context,
+                                          initialDate: DateTime.now(),
+                                          firstDate: DateTime(2000),
+                                          lastDate: DateTime(2035))
+                                      .then((value) {
+                                    setState(() {
+                                      taskdeadline.text =
+                                          DateFormat('yyyy-MM-dd')
+                                              .format(value!);
+                                    });
+                                  });
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -531,8 +620,16 @@ class _TasksState extends State<Tasks> {
                             color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                       onPressed: () async {
-                        await addTask(taskName.text, taskDescription.text,taskdeadline.text);
-                        sendNotificaton("Task added", "task added in project : $ProjectId",ProjectId.toString());
+                        await addTask(taskName.text, taskDescription.text,
+                            taskdeadline.text);
+                        Fluttertoast.showToast(
+                          msg: "Task added !",
+                          toastLength: Toast.LENGTH_SHORT,
+                        );
+                        sendNotificaton(
+                            "Task added",
+                            "task '${taskName.text}' added in project : $ProjectId",
+                            ProjectId.toString());
                         Navigator.pop(context);
                       },
                     ),
@@ -556,10 +653,10 @@ class _TasksState extends State<Tasks> {
   }
 
   Future<void> refresh() async {
-    await Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => Tasks()),
-    );
+    tasksList = await fetchtasks();
+    setState(() {
+      tasksList = tasksList;
+    });
     print("refresh");
   }
 

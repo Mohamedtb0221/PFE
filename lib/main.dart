@@ -5,7 +5,7 @@ import 'package:hive/hive.dart';
 import 'package:testing/pages/login.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 void main() async {
-
+  
   await Hive.initFlutter();
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();

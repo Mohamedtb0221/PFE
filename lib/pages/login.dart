@@ -7,6 +7,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hive/hive.dart';
 import 'package:testing/components/LoginPageComponents/PasswordTextfield.dart';
 import 'package:testing/components/LoginPageComponents/UsernameTextfiled.dart';
+import 'package:testing/main.dart';
 import 'package:testing/pages/home.dart';
 import 'package:get/get.dart';
 import 'package:testing/pages/swipe.dart';
@@ -19,6 +20,7 @@ bool? isChecked = false;
 final usernameController = TextEditingController();
 final passwordController = TextEditingController();
 bool visiblePass = true;
+var x;
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -117,7 +119,7 @@ class _LoginPageState extends State<LoginPage> {
                     onTap: () async {
                       name = usernameController.text;
                       pass = passwordController.text;
-                      var x;
+                      
                       try {
                         print(name);
                         print(pass);
@@ -126,10 +128,12 @@ class _LoginPageState extends State<LoginPage> {
                         name = usernameController.text;
                         pass = passwordController.text;
                         session = x;
+                        print(x);
                         // ignore: unused_catch_clause
                       } on OdooException catch (e) {
                       } finally {
                         if (x == null) {
+                          
                           showflushbar(
                               "Error !", "wrong password or username ");
                         } else {
@@ -137,6 +141,8 @@ class _LoginPageState extends State<LoginPage> {
                           if (isChecked!) {
                             box1.put('username', name);
                             box1.put('password', pass);
+                            box3.put('username', name);
+                            
                           }
                           Get.off(() => const Swipe(),
                               transition: Transition.downToUp);
@@ -158,18 +164,5 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  late Box box1;
-  void createBox() async {
-    box1 = await Hive.openBox('loginData');
-    getData();
-  }
-
-  void getData() async {
-    if (box1.get('username') != null) {
-      usernameController.text = box1.get('username');
-    }
-    if (box1.get('password') != null) {
-      passwordController.text = box1.get('password');
-    }
-  }
+  
 }

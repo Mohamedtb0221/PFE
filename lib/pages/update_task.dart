@@ -4,43 +4,175 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:testing/pages/pagethree.dart';
 import 'package:testing/pages/swipe.dart';
+
 import '../components/my_formtextfield.dart';
 import 'controller/controller.dart';
 import 'home.dart';
 
-class add_project extends StatefulWidget {
-  add_project({super.key});
+Future<dynamic> fetchUsers() async {
+  await check();
+  var res = await orpc.callKw({
+    'model': 'res.users',
+    'method': 'search_read',
+    'args': [],
+    'kwargs': {
+      'context': {'bin_size': true},
+      'domain': [
+        ['share', '=', false]
+      ],
+      'fields': [
+        'id',
+        'name',
+      ],
+      'limit': 10,
+    }
+  });
 
-  @override
-  State<add_project> createState() => _add_projectState();
+  return res;
 }
 
-class _add_projectState extends State<add_project> {
+class MultiSelect extends StatefulWidget {
+  final List<String> items;
+  const MultiSelect({Key? key, required this.items}) : super(key: key);
+
+  @override
+  State<StatefulWidget> createState() => _MultiSelectState();
+}
+
+class _MultiSelectState extends State<MultiSelect> {
+  // this variable holds the selected items
+  final List<String> _selectedItems = [];
+
+// This function is triggered when a checkbox is checked or unchecked
+  void _itemChange(String itemValue, bool isSelected) {
+    setState(() {
+      if (isSelected) {
+        _selectedItems.add(itemValue);
+      } else {
+        _selectedItems.remove(itemValue);
+      }
+    });
+  }
+
+  // this function is called when the Cancel button is pressed
+  void _cancel() {
+    Navigator.pop(context);
+  }
+
+// this function is called when the Submit button is tapped
+  void _submit() {
+    Navigator.pop(context, _selectedItems);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Select Users'),
+      content: SingleChildScrollView(
+        child: ListBody(
+          children: widget.items
+              .map((item) => CheckboxListTile(
+                    activeColor: const Color.fromARGB(255, 120, 100, 156),
+                    value: _selectedItems.contains(item),
+                    title: Text(item),
+                    controlAffinity: ListTileControlAffinity.leading,
+                    onChanged: (isChecked) => _itemChange(item, isChecked!),
+                  ))
+              .toList(),
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: _cancel,
+          child: const Text(
+            'Cancel',
+            style: TextStyle(
+                color: Color.fromARGB(255, 120, 100, 156),
+                fontWeight: FontWeight.bold),
+          ),
+        ),
+        TextButton(
+          onPressed: _submit,
+          child: const Text(
+            'Submit',
+            style: TextStyle(
+                color: Color.fromARGB(255, 120, 100, 156),
+                fontWeight: FontWeight.bold),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class UpdateTask extends StatefulWidget {
+  UpdateTask({super.key});
+
+  @override
+  State<UpdateTask> createState() => _UpdateTaskState();
+}
+
+class _UpdateTaskState extends State<UpdateTask> {
   TextEditingController taskName = TextEditingController();
   TextEditingController taskDescription = TextEditingController();
   TextEditingController taskdeadline = TextEditingController();
-  TextEditingController taskStart = TextEditingController();
+  List<String> _selectedItems = [];
+  List<dynamic> ids = [];
 
+  void _showMultiSelect() async {
+    var res = await fetchUsers();
 
-  Future addProject(String name, String description,String startdate, String deadline,
-      ) async {
-    await check();
+    final List<String> items = [];
+    for (var x in res) {
+      items.add(x['name']);
+    }
+
+    final List<String>? results = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return MultiSelect(items: items);
+      },
+    );
+
+    // Update UI
+    if (results != null) {
+      setState(() {
+        _selectedItems = results;
+      });
+    }
+    print(_selectedItems);
+    for (var i in _selectedItems) {
+      print(i);
+    }
+
+    for (var i in _selectedItems) {
+      var result =
+          res.firstWhere((value) => value["name"] == i, orElse: () => null);
+      ids.add(result["id"]);
+    }
+    print(ids);
+  }
+
+  var record = Get.arguments;
+  Future updateTask(String name, String description, String deadline,
+      List<dynamic> ids) async {        
+    await check();    
     var res = await orpc.callKw({
-      'model': 'project.project',
-      'method': 'create',
+      'model': 'project.task',
+      'method': 'write',
       'args': [
+        record['id'],
         {
-          'name': name,
-          'description':description,
-          'date_start':startdate,
-          'date': deadline,         
-         
-        },
+          'name': name.isEmpty ? record['name'] : name,
+          'description': description.isEmpty ?record['description'] : description,
+          'date_deadline': deadline.isEmpty ? record['date_deadline'] : deadline,
+          'user_ids':ids.isEmpty ? record['user_ids'] : ids
+        }
       ],
       'domain': [],
       'kwargs': {}
     });
-    print("added");
+    print("updated");
 
     return res;
   }
@@ -64,7 +196,7 @@ class _add_projectState extends State<add_project> {
               const Padding(
                 padding: EdgeInsets.only(left: 38.0, top: 20, bottom: 30),
                 child: Text(
-                  "Add a project",
+                  "Update a task",
                   style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -81,7 +213,7 @@ class _add_projectState extends State<add_project> {
                         children: [
                           MyTextFormField(
                             controller: taskName,
-                            hintText: 'Project Name',
+                            hintText: 'Task Name',
                             obscureText: false,
                           ),
                           const SizedBox(
@@ -89,69 +221,15 @@ class _add_projectState extends State<add_project> {
                           ),
                           MyTextFormField(
                             controller: taskDescription,
-                            hintText: 'project Description',
+                            hintText: 'Task Description',
                             obscureText: false,
                           ),
                           const SizedBox(
                             height: 40,
                           ),
                           MyTextFormField(
-                            controller: taskStart,
-                            hintText: 'project start date',
-                            obscureText: false,
-                            suffixIcon: IconButton(
-                              icon: const Icon(Icons.date_range),
-                              onPressed: () {
-                                showDatePicker(
-                                        builder: (context, child) {
-                                          return Theme(
-                                            data: Theme.of(context).copyWith(
-                                              colorScheme:
-                                                  const ColorScheme.light(
-                                                primary: Color.fromARGB(
-                                                    255,
-                                                    120,
-                                                    100,
-                                                    156), // <-- SEE HERE
-                                                // <-- SEE HERE
-                                              ),
-                                              textButtonTheme:
-                                                  TextButtonThemeData(
-                                                style: TextButton.styleFrom(
-                                                  // ignore: deprecated_member_use
-                                                  primary: const Color.fromARGB(
-                                                      255,
-                                                      120,
-                                                      100,
-                                                      156), // button text color
-                                                ),
-                                              ),
-                                            ),
-                                            child: child!,
-                                          );
-                                        },
-                                        context: context,
-                                        initialDate: DateTime.now(),
-                                        firstDate: DateTime(2000),
-                                        lastDate: DateTime(2035))
-                                    .then((value) {
-                                  setState(() {
-                                    taskStart.text =
-                                        DateFormat('yyyy-MM-dd').format(value!);
-                                  });
-                                });
-                              },
-                            ),
-                          ),
-                          const SizedBox(
-                            height: 30,
-                          ),
-
-                          
-                                
-                                MyTextFormField(
                             controller: taskdeadline,
-                            hintText: 'project deadline date',
+                            hintText: 'Task deadline',
                             obscureText: false,
                             suffixIcon: IconButton(
                               icon: const Icon(Icons.date_range),
@@ -197,6 +275,45 @@ class _add_projectState extends State<add_project> {
                               },
                             ),
                           ),
+                          const SizedBox(
+                            height: 30,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.all(30),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                // use this button to open the multi-select dialog
+                                GestureDetector(
+                                  onTap: _showMultiSelect,
+                                  child: Container(
+                                      width: 300,
+                                      padding: EdgeInsets.all(18),
+                                      decoration: BoxDecoration(
+                                        borderRadius: BorderRadius.circular(30),
+                                        color:
+                                            Color.fromARGB(255, 120, 100, 156)
+                                                .withOpacity(0.8),
+                                      ),
+                                      child: const Text(
+                                        "Select assigned users",
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      )),
+                                ),
+
+                                // display selected items
+                                Wrap(
+                                  children: _selectedItems
+                                      .map((e) => Chip(
+                                            label: Text(e),
+                                          ))
+                                      .toList(),
+                                ),
                                 SizedBox(
                                   height: Get.height * 0.12,
                                 ),
@@ -226,23 +343,20 @@ class _add_projectState extends State<add_project> {
                                     ),
                                     GestureDetector(
                                       onTap: () async {
-                                        await addProject(
+                                        await updateTask(
                                             taskName.text,
                                             taskDescription.text,
-                                            taskStart.text,
                                             taskdeadline.text,
-                                            );
+                                            ids);
                                         Fluttertoast.showToast(
-                                          msg: "Project added !",
+                                          msg: "Task updated !",
                                           toastLength: Toast.LENGTH_SHORT,
                                         );
-                                        
-                                        /*sendNotificaton(
-                                            "Task added",
-                                            "task '${taskName.text}' added in project : $ProjectName",
-                                            ProjectId.toString());*/
-                                        
-                                        Get.back();
+                                        sendNotificaton(
+                                            "Task updated",
+                                            "task '${taskName.text.isEmpty ? record['name']: taskName.text}' updated in project : $ProjectName",
+                                            ProjectId.toString());
+                                        Navigator.pop(context);
                                       },
                                       child: Container(
                                         padding: const EdgeInsets.symmetric(
@@ -253,7 +367,7 @@ class _add_projectState extends State<add_project> {
                                             color: const Color.fromARGB(
                                                 255, 120, 100, 156)),
                                         child: const Text(
-                                          "Add",
+                                          "Save",
                                           style: TextStyle(
                                               color: Colors.white,
                                               fontWeight: FontWeight.bold),
@@ -265,12 +379,12 @@ class _add_projectState extends State<add_project> {
                               ],
                             ),
                           ),
-                        
-                      
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              
+              ),
             ],
           ),
         ),

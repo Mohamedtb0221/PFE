@@ -23,14 +23,15 @@ Future<dynamic> fetchtasks() async {
         'domain': [
           ['project_id', '=', ProjectId],
           ['stage_id','!=',3],
-                 
+                          
         ],
         'fields': [
-          'stage_id',
+          'user_ids',
+          'kanban_state',
           'id',
           'name',
           'create_date',
-          
+          'manager_id',
           'description',
           'date_deadline',
           
@@ -38,7 +39,7 @@ Future<dynamic> fetchtasks() async {
         'limit': 10,
       }
     });
-    
+    print(res);
     return res;
   }
 class _TasksSwipeState extends State<TasksSwipe> {
@@ -47,6 +48,10 @@ class _TasksSwipeState extends State<TasksSwipe> {
     var tasksPageController = PageController();
     return Scaffold(
       appBar: AppBar(
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20))),
         backgroundColor: const Color.fromARGB(255, 120, 100, 156),
         title: const Text(
           "My Tasks",

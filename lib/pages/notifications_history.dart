@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:testing/pages/swipe.dart';
 
+import 'home.dart';
+
 class NotificationHistory extends StatefulWidget {
   const NotificationHistory({super.key});
 
@@ -60,7 +62,9 @@ class _NotificationHistoryState extends State<NotificationHistory> {
                     child: ListView.builder(
                       itemCount: recievedNotifications.length,
                       itemBuilder: (context, index) {
-                        var message = recievedNotifications[index];
+                        var message;
+                        recievedNotifications[index]['id']==session.userId ? message = recievedNotifications[index]:index++;
+                        ;
                         return FadeInRight(
                           
                           delay: const Duration(milliseconds: 600),
@@ -81,6 +85,7 @@ class _NotificationHistoryState extends State<NotificationHistory> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(message['body'] ?? ''),
+                                  SizedBox(height: 10,),
                                   Row(
                                     mainAxisAlignment: MainAxisAlignment.end,
                                     children: [

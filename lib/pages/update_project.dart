@@ -8,33 +8,35 @@ import '../components/my_formtextfield.dart';
 import 'controller/controller.dart';
 import 'home.dart';
 
-class add_project extends StatefulWidget {
-  add_project({super.key});
+class Update_project extends StatefulWidget {
+  Update_project({super.key});
 
   @override
-  State<add_project> createState() => _add_projectState();
+  State<Update_project> createState() => _Update_projectState();
 }
 
-class _add_projectState extends State<add_project> {
+class _Update_projectState extends State<Update_project> {
   TextEditingController taskName = TextEditingController();
   TextEditingController taskDescription = TextEditingController();
   TextEditingController taskdeadline = TextEditingController();
   TextEditingController taskStart = TextEditingController();
 
-
-  Future addProject(String name, String description,String startdate, String deadline,
-      ) async {
+  Future updateProject(
+    String name,
+    String description,
+    String startdate,
+    String deadline,
+  ) async {
     await check();
     var res = await orpc.callKw({
       'model': 'project.project',
-      'method': 'create',
+      'method': 'write',
       'args': [
         {
           'name': name,
-          'description':description,
-          'date_start':startdate,
-          'date': deadline,         
-         
+          'description': description,
+          'date_start': startdate,
+          'date': deadline,
         },
       ],
       'domain': [],
@@ -64,7 +66,7 @@ class _add_projectState extends State<add_project> {
               const Padding(
                 padding: EdgeInsets.only(left: 38.0, top: 20, bottom: 30),
                 child: Text(
-                  "Add a project",
+                  "update your project",
                   style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
@@ -146,10 +148,7 @@ class _add_projectState extends State<add_project> {
                           const SizedBox(
                             height: 30,
                           ),
-
-                          
-                                
-                                MyTextFormField(
+                          MyTextFormField(
                             controller: taskdeadline,
                             hintText: 'project deadline date',
                             obscureText: false,
@@ -197,80 +196,73 @@ class _add_projectState extends State<add_project> {
                               },
                             ),
                           ),
-                                SizedBox(
-                                  height: Get.height * 0.12,
+                          SizedBox(
+                            height: Get.height * 0.12,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              GestureDetector(
+                                onTap: () {
+                                  Get.back();
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 40, vertical: 20),
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(30),
+                                      color: const Color.fromARGB(
+                                          255, 120, 100, 156)),
+                                  child: const Text(
+                                    "Cancel",
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold),
+                                  ),
                                 ),
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    GestureDetector(
-                                      onTap: () {
-                                        Get.back();
-                                      },
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 40, vertical: 20),
-                                        decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(30),
-                                            color: const Color.fromARGB(
-                                                255, 120, 100, 156)),
-                                        child: const Text(
-                                          "Cancel",
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                      ),
-                                    ),
-                                    GestureDetector(
-                                      onTap: () async {
-                                        await addProject(
-                                            taskName.text,
-                                            taskDescription.text,
-                                            taskStart.text,
-                                            taskdeadline.text,
-                                            );
-                                        Fluttertoast.showToast(
-                                          msg: "Project added !",
-                                          toastLength: Toast.LENGTH_SHORT,
-                                        );
-                                        
-                                        /*sendNotificaton(
+                              ),
+                              GestureDetector(
+                                onTap: () async {
+                                  await updateProject(
+                                    taskName.text,
+                                    taskDescription.text,
+                                    taskStart.text,
+                                    taskdeadline.text,
+                                  );
+                                  Fluttertoast.showToast(
+                                    msg: "Project updated !",
+                                    toastLength: Toast.LENGTH_SHORT,
+                                  );
+                                  /*sendNotificaton(
                                             "Task added",
                                             "task '${taskName.text}' added in project : $ProjectName",
                                             ProjectId.toString());*/
-                                        
-                                        Get.back();
-                                      },
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 40, vertical: 20),
-                                        decoration: BoxDecoration(
-                                            borderRadius:
-                                                BorderRadius.circular(30),
-                                            color: const Color.fromARGB(
-                                                255, 120, 100, 156)),
-                                        child: const Text(
-                                          "Add",
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                      ),
-                                    )
-                                  ],
-                                )
-                              ],
-                            ),
-                          ),
-                        
-                      
+
+                                  Get.back();
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 40, vertical: 20),
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(30),
+                                      color: const Color.fromARGB(
+                                          255, 120, 100, 156)),
+                                  child: const Text(
+                                    "Save",
+                                    style: TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              )
+                            ],
+                          )
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              
+              ),
             ],
           ),
         ),

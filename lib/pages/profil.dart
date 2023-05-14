@@ -1,8 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:hive/hive.dart';
+import 'package:testing/main.dart';
 import 'package:testing/pages/home.dart';
 import 'package:testing/pages/login.dart';
+import 'package:testing/pages/swipe.dart';
 import '../components/clipPath.dart';
 
 class ProfilPage extends StatefulWidget {
@@ -45,8 +48,8 @@ class _ProfilPageState extends State<ProfilPage> {
           if (snapshot.hasData) {
             final imageString = snapshot.data[0]['image_128'] ?? '';
 
-            final imageBytes =
-                imageString.isNotEmpty ? base64.decode(imageString) : null;
+            final imageBytes =imageString.runtimeType!=bool?
+                imageString.isNotEmpty ? base64.decode(imageString) : null:null;
 
             final imageWidget = imageBytes != null
                 ? Image.memory(
@@ -56,8 +59,8 @@ class _ProfilPageState extends State<ProfilPage> {
                   )
                 : Image.network(
                     "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png",
-                    height: 40,
-                    width: 40,
+                    height: 120,
+                    width: 120,
                   );
 
             return Column(
@@ -143,7 +146,7 @@ class _ProfilPageState extends State<ProfilPage> {
                         decoration: BoxDecoration(
                             border: Border.all(color: Colors.black38, width: 1),
                             borderRadius: BorderRadius.circular(16)),
-                        child: Text(snapshot.data[0]['phone']),
+                        child: Text(snapshot.data[0]['phone'] == false ? 'no number' : snapshot.data[0]['phone']),
                       ),
                     ],
                   ),
@@ -171,8 +174,8 @@ class _ProfilPageState extends State<ProfilPage> {
                               
                               children: [
                                  const Text('Edit profil',style: TextStyle(color: Colors.white,fontSize: 16,fontWeight: FontWeight.bold),),
-                                 Expanded(child: Container()),
-                                 const Icon(Icons.edit,color: Colors.white,size: 20,)
+                                 //Expanded(child: Container()),
+                                 //Expanded(child: const Icon(Icons.edit,color: Colors.white,size: 20,))
                               ],
                             ),
                           ),
@@ -192,7 +195,11 @@ class _ProfilPageState extends State<ProfilPage> {
                                 TextButton(onPressed: (){
                                   Get.back();
                                 }, child: const Text("No",style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold),)),
-                                TextButton(onPressed: (){
+                                TextButton(onPressed: ()async{
+                                  box1 = await Hive.openBox('loginData');
+                                  box1.clear();
+                                  x=null;
+                                  messaging.unsubscribeFromTopic(session.userId.toString());
                                   Get.offAll(const LoginPage());
                                 }, child: const Text("Yes",style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold))),
 
@@ -214,9 +221,9 @@ class _ProfilPageState extends State<ProfilPage> {
                             child: Row(
                               
                               children: [
-                                 Text('Log out',style: TextStyle(color: Colors.white,fontSize: 16,fontWeight: FontWeight.bold),),
-                                 Expanded(child: Container()),
-                                 Icon(Icons.logout,color: Colors.white,size: 20,)
+                                 const Text('Log out',style: TextStyle(color: Colors.white,fontSize: 16,fontWeight: FontWeight.bold),),
+                                 //Expanded(child: Container()),
+                                 //const Icon(Icons.logout,color: Colors.white,size: 20,)
                               ],
                             ),
                           ),

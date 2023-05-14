@@ -9,15 +9,15 @@ import 'package:odoo_rpc/odoo_rpc.dart';
 import 'package:testing/pages/gantt.dart';
 import 'package:testing/pages/login.dart';
 import 'package:testing/pages/notifications_history.dart';
-import 'package:testing/pages/pagethree.dart';
-import 'package:testing/pages/pagetwo.dart';
 import 'package:testing/pages/swipe.dart';
+import 'home_page.dart';
 
-final orpc = OdooClient('http://192.168.216.136:8069/');
+final orpc = OdooClient('http://192.168.1.106:8069/');
 late Box box2;
 var session;
 Future<dynamic> check() async {
   session = await orpc.authenticate('testdb', name, pass);
+  
 }
 
 class MyApp extends StatefulWidget {
@@ -40,11 +40,10 @@ class _MyAppState extends State<MyApp> {
         centerTitle: true,
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right:8.0),
+            padding: const EdgeInsets.only(right: 8.0),
             child: IconButton(
                 onPressed: () {
-                  
-                      Get.to(() =>NotificationHistory());
+                  Get.to(() => NotificationHistory());
                 },
                 icon: Icon(Icons.notifications)),
           )
@@ -63,12 +62,15 @@ class mywidget extends StatefulWidget {
 }
 
 class _mywidgetState extends State<mywidget> {
+  
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     createBox();
   }
+
   @override
   Widget build(BuildContext context) {
     return Center(
@@ -95,8 +97,9 @@ class _mywidgetState extends State<mywidget> {
           ),
           ElevatedButton(
               onPressed: () async {
+                
                 Navigator.of(context)
-                    .push(MaterialPageRoute(builder: (context) => pagetwo()));
+                    .push(MaterialPageRoute(builder: (context) => HomePage()));
               },
               child: Container(
                   width: 150,
@@ -112,8 +115,8 @@ class _mywidgetState extends State<mywidget> {
           ),
           ElevatedButton(
               onPressed: () async {
-                Navigator.of(context)
-                    .push(MaterialPageRoute(builder: (context) => GanttChart()));
+                Navigator.of(context).push(
+                    MaterialPageRoute(builder: (context) => GanttChart()));
               },
               child: Container(
                   width: 150,
@@ -128,14 +131,17 @@ class _mywidgetState extends State<mywidget> {
       ),
     );
   }
-  
+
   void createBox() async {
     box2 = await Hive.openBox('NotificationData');
+    box2.clear();
     getData();
   }
+
   void getData() async {
-    if (box2.get('notification') != null) { 
-      recievedNotifications = box2.get('notification');     
-    }    
+    if (box2.get('notification') != null) {
+      List<dynamic> data = box2.get('notification');
+      recievedNotifications = data.where((element) => element['id']==session.userId).toList();
+    }
   }
 }

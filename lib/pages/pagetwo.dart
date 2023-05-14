@@ -1,7 +1,10 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../components/my_formtextfield.dart';
 import 'home.dart';
 import 'notifications_history.dart';
 
@@ -33,6 +36,26 @@ class _pagetwoState extends State<pagetwo> {
         'limit': 80,
       }
     });
+  }
+
+  Future addContact(String name, String email, String phone) async {
+    await check();
+    var res = await orpc.callKw({
+      'model': 'res.partner',
+      'method': 'create',
+      'args': [
+        {
+          'name': name,
+          'email': email,
+          'phone': phone,
+        },
+      ],
+      'domain': [],
+      'kwargs': {}
+    });
+    print("added");
+
+    return res;
   }
 
   Widget buildListItem(Map<String, dynamic> record) {
@@ -140,12 +163,19 @@ class _pagetwoState extends State<pagetwo> {
   String searchWord = "";
   @override
   Widget build(BuildContext context) {
+    TextEditingController contactName = TextEditingController();
+    TextEditingController contactEmail = TextEditingController();
+    TextEditingController contactPhone = TextEditingController();
     return Scaffold(
       appBar: AppBar(
         title: const Text(
           "Contacts",
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
+        shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20))),
         centerTitle: true,
         backgroundColor: const Color.fromARGB(
           255,
@@ -155,11 +185,10 @@ class _pagetwoState extends State<pagetwo> {
         ),
         actions: [
           Padding(
-            padding: const EdgeInsets.only(right:8.0),
+            padding: const EdgeInsets.only(right: 8.0),
             child: IconButton(
                 onPressed: () {
-                  
-                      Get.to(() =>NotificationHistory());
+                  Get.to(() => NotificationHistory());
                 },
                 icon: Icon(Icons.notifications)),
           )
@@ -260,6 +289,92 @@ class _pagetwoState extends State<pagetwo> {
           ),
         ),
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () async {
+          showDialog(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: const Text(
+                  " Add a contact",
+                  style: TextStyle(
+                      color: Colors.black, fontWeight: FontWeight.bold),
+                ),
+                content: Container(
+                  height: Get.height*0.3,
+                  child: Column(
+                    children: [
+                      MyTextFormField(
+                        controller: contactName,
+                        hintText: ' Name',
+                        obscureText: false,
+                      ),
+                       Expanded(child: Container()),
+                      MyTextFormField(
+                        controller: contactEmail,
+                        hintText: ' Email',
+                        obscureText: false,
+                      ),
+                      Expanded(child: Container()),
+                      MyTextFormField(
+                        controller: contactPhone,
+                        hintText: ' Phone',
+                        obscureText: false,
+                      ),
+                    ],
+                  ),
+                ),
+                actions: [
+                  TextButton(
+                      onPressed: () {
+                        Get.back();
+                      },
+                      child: const Text(
+                        "Cancel",
+                        style: TextStyle(
+                            color: Colors.black, fontWeight: FontWeight.bold),
+                      )),
+                  TextButton(
+                      onPressed: () async {
+                        await check();
+                        await addContact(contactName.text
+                        , contactEmail.text, contactPhone.text);
+                        Fluttertoast.showToast(
+                          msg: "contact added",
+                          toastLength: Toast.LENGTH_SHORT,
+                        );
+                        refresh();
+                        Get.back();
+                      },
+                      child: const Text(
+                        "Add",
+                        style: TextStyle(
+                            color: Colors.black, fontWeight: FontWeight.bold),
+                      )),
+                ],
+              );
+            },
+          );
+        },
+        backgroundColor: Colors.white,
+        elevation: 30,
+        label: const Text(
+          "Add",
+          style: TextStyle(color: Color.fromARGB(255, 120, 100, 156)),
+        ),
+        icon: const Icon(
+          Icons.add,
+          color: Color.fromARGB(255, 120, 100, 156),
+          size: 30,
+        ),
+      ),
     );
+  }
+  Future<void> refresh() async {
+    contactsList = await fetchcontacts();
+    setState(() {
+      contactsList = contactsList;
+    });
+    print("refresh");
   }
 }

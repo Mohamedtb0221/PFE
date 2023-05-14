@@ -11,6 +11,8 @@ import 'package:testing/pages/pagetwo.dart';
 import 'package:http/http.dart' as http;
 import 'package:testing/pages/profil.dart';
 
+import 'home_page.dart';
+
 final FirebaseMessaging messaging = FirebaseMessaging.instance;
 List<dynamic> recievedNotifications = [];
 getMessage() {
@@ -18,11 +20,13 @@ getMessage() {
     var day = DateFormat('dd-MM-yyyy').format(DateTime.now());
     var time = DateFormat('hh:mm a').format(DateTime.now());
     dynamic data = {
+      'id':session.userId,
       'title': event.notification!.title,
       'body': event.notification!.body,
       'day':day,
       'time':time,
     };
+    
     recievedNotifications.insert(0,data);
     box2.put('notification', recievedNotifications);    
     print(event.notification!.title);
@@ -72,6 +76,8 @@ class _SwipeState extends State<Swipe> {
       print(value);
     });
     getMessage();
+    print("-------------------");
+    print(session.userId);
     
     super.initState();
     setState(() {
@@ -81,11 +87,14 @@ class _SwipeState extends State<Swipe> {
 
   UserTopics() async {
     List projects = await fetchProjects();
+    messaging.subscribeToTopic(session.userId.toString());
+
     for (var project in projects) {
       print(project['id']);
       messaging.subscribeToTopic(project['id'].toString());
     }
   }
+  
 
   @override
   Widget build(BuildContext context) {
@@ -141,7 +150,7 @@ class _SwipeState extends State<Swipe> {
           },
           controller: pageController,
           children: [
-            const MyApp(),
+            const HomePage(),
             pagethree(),
             pagetwo(),
             const ProfilPage(),

@@ -13,7 +13,7 @@ class Event extends StatelessWidget {
     return Container(
       alignment: Alignment.center,
       width: double.infinity,
-      height: 50,
+      height: 40,
       padding: EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: Theme.of(context).primaryColorLight,

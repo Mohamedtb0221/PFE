@@ -1,10 +1,10 @@
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:dynamic_timeline/dynamic_timeline.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 import 'package:testing/pages/tasksswipe.dart';
 
-import '../components/event.dart';
 
 class GanttChart extends StatefulWidget {
   const GanttChart({Key? key}) : super(key: key);
@@ -41,7 +41,7 @@ class _GanttChartState extends State<GanttChart> {
           children: [
             Padding(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 0, vertical: 50),
+                        const EdgeInsets.only(top: 50,bottom: 20),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 25.0),
                       child: GestureDetector(
@@ -105,14 +105,14 @@ class _GanttChartState extends State<GanttChart> {
                     data = snapshot.data;
                     for (var i = 0; i < data.length; i++) {
                       if (data[i]['create_date'] != false && data[i]['date_deadline']!= false && DateTime.parse(data[i]['create_date']).isBefore(DateTime.parse(data[i]['date_deadline']))) {
-                        print( DateTime.parse(data[i]['create_date']));
-                        print( DateTime.parse(data[i]['date_deadline']));
+                        
                         items.add(
                       TimelineItem(
                         startDateTime:
-                            DateTime.parse(data[i]['create_date']),
+                           DateTime.parse(DateFormat('yyyy-MM-dd').format(DateTime.parse(data[i]['create_date']))),
                         endDateTime:
-                            DateTime.parse(data[i]['date_deadline']),
+                            //DateTime.parse(data[i]['date_deadline']),
+                            DateTime.parse(DateFormat('yyyy-MM-dd').format(DateTime.parse(data[i]['date_deadline']))),
                         position: i,
                         
                         child: Event(title: data[i]['name']),
@@ -120,7 +120,9 @@ class _GanttChartState extends State<GanttChart> {
                       }  
                                     
                     }
+                    print('------------------------------');
                     print(items);
+                    print('------------------------------');
                     return Padding(
                       padding: const EdgeInsets.all(10),
                       child: Container(
@@ -131,17 +133,20 @@ class _GanttChartState extends State<GanttChart> {
                           child: SingleChildScrollView(
                             scrollDirection: Axis.horizontal,
                             controller: scrollController,
-                            child: DynamicTimeline(
-                                firstDateTime: startDate,
-                                lastDateTime: DateTime(2024, 12, 31),
-                                labelBuilder: DateFormat('dd/MM').format,
-                                axis: Axis.horizontal,
-                                intervalDuration: const Duration(days: 1),
-                                minItemDuration: const Duration(days: 1),
-                                crossAxisCount: items.length+1,
-                                intervalExtent: 45,
-                                maxCrossAxisItemExtent: 50,                          
-                                items: items),
+                            child: 
+                              DynamicTimeline(
+                                  firstDateTime: startDate,
+                                  lastDateTime: DateTime(2024, 12, 31),
+                                  labelBuilder: DateFormat('dd\nMM').format,
+                                  textStyle:const TextStyle(fontSize: 10,color: Colors.black),
+                                  axis: Axis.horizontal,
+                                  intervalDuration: const Duration(days: 1),
+                                  minItemDuration: const Duration(days: 1),
+                                  crossAxisCount: items.length,
+                                  intervalExtent: 25,
+                                  maxCrossAxisItemExtent: 50,                                                          
+                                  items: items),
+                            
                           ),
                         ),
                       ),
@@ -177,13 +182,13 @@ class Event extends StatelessWidget {
     return Container(
       alignment: Alignment.center,
       width: double.infinity,
-      height: 50,
+      height: 40,
       padding: EdgeInsets.all(5),
       decoration: BoxDecoration(
         color: Theme.of(context).primaryColor,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(7),
       ),
-      child: Text(title,style:const TextStyle(color: Colors.white,fontSize: 18,fontWeight: FontWeight.bold,letterSpacing: 1),),
+      child: AutoSizeText(title,style:const TextStyle(color: Colors.white,fontSize: 18,fontWeight: FontWeight.bold,letterSpacing: 1),),
     );
   }
 }

@@ -12,12 +12,11 @@ import 'package:testing/pages/notifications_history.dart';
 import 'package:testing/pages/swipe.dart';
 import 'home_page.dart';
 
-final orpc = OdooClient('http://192.168.1.106:8069/');
+final orpc = OdooClient('http://192.168.1.105:8069/');
 late Box box2;
 var session;
 Future<dynamic> check() async {
-  session = await orpc.authenticate('testdb', name, pass);
-  
+  session = await orpc.authenticate('testdb', name, pass);  
 }
 
 class MyApp extends StatefulWidget {
@@ -133,8 +132,7 @@ class _mywidgetState extends State<mywidget> {
   }
 
   void createBox() async {
-    box2 = await Hive.openBox('NotificationData');
-    box2.clear();
+    box2 = await Hive.openBox('NotificationData');    
     getData();
   }
 

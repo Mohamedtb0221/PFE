@@ -1,5 +1,7 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
@@ -12,37 +14,36 @@ import 'add_project.dart';
 
 int ProjectId = 0;
 String ProjectName = "";
-
+String Project_deadline="";
 
 bool is_admin = false;
-  Future<dynamic> isAdmin() async {
-    await check();
-    var res = await orpc.callKw({
-      'model': 'res.users',
-      'method': 'search_read',
-      'args': [],
-      'kwargs': {
-        'context': {'bin_size': true},
-        'domain': [
-          ['id', '=', session.userId]
-        ],
-        'fields': ['id', 'groups_id'],
-        'limit': 1,
-      }
-    });
-    List permissions = res[0]['groups_id'];
-    
-
-    if (permissions.contains(17)) {
-      
-      return is_admin = true;
-    } else {
-      return is_admin = false;
+Future<dynamic> isAdmin() async {
+  //await check();
+  var res = await orpc.callKw({
+    'model': 'res.users',
+    'method': 'search_read',
+    'args': [],
+    'kwargs': {
+      'context': {'bin_size': true},
+      'domain': [
+        ['id', '=', session.userId]
+      ],
+      'fields': ['id', 'groups_id'],
+      'limit': 1,
     }
+  });
+  List permissions = res[0]['groups_id'];
+
+  if (permissions.contains(17)) {
+    return is_admin = true;
+  } else {
+    return is_admin = false;
   }
+}
+
 Future<dynamic> fetchProjects() async {
-  await check();
-  
+  //await check();
+
   return await orpc.callKw({
     'model': 'project.project',
     'method': 'search_read',
@@ -65,7 +66,7 @@ class pagethree extends StatefulWidget {
 
 class _pagethreeState extends State<pagethree> {
   Future<dynamic> fetchtasks(id) async {
-    await check();
+    //await check();
     return orpc.callKw({
       'model': 'project.task',
       'method': 'search_read',
@@ -83,8 +84,6 @@ class _pagethreeState extends State<pagethree> {
       }
     });
   }
-
-  
 
   Widget builditem(Map<String, dynamic> record) {
     return Card(
@@ -126,6 +125,7 @@ class _pagethreeState extends State<pagethree> {
       ),
     );
   }
+
   @override
   void initState() {
     // TODO: implement initState
@@ -134,6 +134,7 @@ class _pagethreeState extends State<pagethree> {
     print(is_admin);
     print("---------------");
   }
+
   var record;
   @override
   Widget build(BuildContext context) {
@@ -169,7 +170,6 @@ class _pagethreeState extends State<pagethree> {
           child: FutureBuilder(
             future: fetchProjects(),
             builder: (context, snapshot) {
-              
               if (snapshot.hasData) {
                 return GridView.builder(
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -178,108 +178,240 @@ class _pagethreeState extends State<pagethree> {
                   itemCount: snapshot.data.length,
                   itemBuilder: (context, index) {
                     final record = snapshot.data[index] as Map<String, dynamic>;
-                    return FadeInUp(
+                    return FadeIn(
                       child: GestureDetector(
                         child: builditem(record),
-                        onLongPress: () async{
+                        onLongPress: () async {
                           print("long pressed ");
-                           is_admin ? 
-                          showModalBottomSheet(
-                            context: context,
-                          shape:const RoundedRectangleBorder(
-                            borderRadius: BorderRadius.vertical(top: Radius.circular(30))
-                          ),
-                           builder: (context) {
-                            return Container(
-                              height: Get.height*0.35,
-                              child: Column(
-                                children: [
-                                  GestureDetector(
-                                    onTap: () {
-                                      Get.to(Update_project(),transition: Transition.rightToLeft,duration:const Duration(milliseconds: 400));
-                                    },
-                                    child: Container(
-                                      margin: const EdgeInsets.all(20),
-                                      decoration: BoxDecoration(
-                                        color: Colors.black26,                                        
-                                        borderRadius: BorderRadius.circular(30)
-                                      ),
-                                      height: 55,
-                                      child: Center(child: Row(                                        
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          is_admin
+                              ? showModalBottomSheet(
+                                  context: context,
+                                  shape: const RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.vertical(
+                                          top: Radius.circular(30))),
+                                  builder: (context) {
+                                    return Container(
+                                      height: Get.height * 0.35,
+                                      child: Column(
                                         children: [
-                                          Expanded(child: Container(),flex: 4,),
-                                          Expanded(
-                                            flex: 4,
-                                            child: Text("Update",style: GoogleFonts.lato(
-                                                                              fontSize: 21, fontWeight: FontWeight.bold,color: Colors.white),),
+                                          GestureDetector(
+                                            onTap: () {
+                                              Get.to(Update_project(),
+                                                  transition:
+                                                      Transition.rightToLeft,
+                                                  duration: const Duration(
+                                                      milliseconds: 400),
+                                                  arguments: record);
+                                            },
+                                            child: Container(
+                                              margin: const EdgeInsets.all(20),
+                                              decoration: BoxDecoration(
+                                                  color: Colors.black26,
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          30)),
+                                              height: 55,
+                                              child: Center(
+                                                  child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  Expanded(
+                                                    child: Container(),
+                                                    flex: 4,
+                                                  ),
+                                                  Expanded(
+                                                    flex: 4,
+                                                    child: Text(
+                                                      "Update",
+                                                      style: GoogleFonts.lato(
+                                                          fontSize: 21,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: Colors.white),
+                                                    ),
+                                                  ),
+                                                  const Expanded(
+                                                      flex: 3,
+                                                      child: Icon(
+                                                        Iconsax.edit,
+                                                        color: Colors.white,
+                                                      ))
+                                                ],
+                                              )),
+                                            ),
                                           ),
-                                    const Expanded(
-                                      flex: 3,
-                                      child:  Icon(Iconsax.edit,color: Colors.white,))
+                                          GestureDetector(
+                                            child: Container(
+                                              margin: const EdgeInsets.only(
+                                                  left: 20,
+                                                  right: 20,
+                                                  bottom: 20),
+                                              decoration: BoxDecoration(
+                                                  color: Colors.black26,
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          30)),
+                                              height: 55,
+                                              child: Center(
+                                                  child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  Expanded(
+                                                    child: Container(),
+                                                    flex: 4,
+                                                  ),
+                                                  Expanded(
+                                                    flex: 4,
+                                                    child: Text(
+                                                      "Description",
+                                                      style: GoogleFonts.lato(
+                                                          fontSize: 21,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: Colors.white),
+                                                    ),
+                                                  ),
+                                                  const Expanded(
+                                                      flex: 3,
+                                                      child: Icon(
+                                                        Iconsax.clipboard_text,
+                                                        color: Colors.white,
+                                                      ))
+                                                ],
+                                              )),
+                                            ),
+                                          ),
+                                          GestureDetector(
+                                            onTap: () {
+                                              showDialog(
+                                                context: context,
+                                                builder: (context) {
+                                                  return AlertDialog(
+                                                    title: const Text(
+                                                      "Delete this project ?",
+                                                      style: TextStyle(
+                                                          color: Colors.black,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                    ),
+                                                    actions: [
+                                                      TextButton(
+                                                          onPressed: () {
+                                                            Get.back();
+                                                          },
+                                                          child: const Text(
+                                                            "No",
+                                                            style: TextStyle(
+                                                                color: Colors
+                                                                    .black,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          )),
+                                                      TextButton(
+                                                          onPressed: () async {
+                                                            //await check();
+                                                            var res = await orpc
+                                                                .callKw({
+                                                              'model':
+                                                                  'project.project',
+                                                              'method':
+                                                                  'unlink',
+                                                              'args': [
+                                                                [record['id']],
+                                                              ],
+                                                              'domain': [],
+                                                              'kwargs': {}
+                                                            });
+                                                            refresh();
+                                                            /*sendNotificaton(
+                                            "Task Removed",
+                                            "task " +
+                                                record['name'] +
+                                                " removed from project : $ProjectName",
+                                            ProjectId.toString());*/
+                                                            Fluttertoast
+                                                                .showToast(
+                                                              msg:
+                                                                  "project removed",
+                                                              toastLength: Toast
+                                                                  .LENGTH_SHORT,
+                                                            );
+                                                            Get.back();
+                                                            return res;
+                                                          },
+                                                          child: const Text(
+                                                            "Yes",
+                                                            style: TextStyle(
+                                                                color: Colors
+                                                                    .black,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold),
+                                                          )),
+                                                    ],
+                                                  );
+                                                },
+                                              );
+                                            },
+                                            child: Container(
+                                              margin: const EdgeInsets.only(
+                                                  left: 20,
+                                                  right: 20,
+                                                  bottom: 20),
+                                              decoration: BoxDecoration(
+                                                  color: Colors.red.shade300,
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          30)),
+                                              height: 55,
+                                              child: Center(
+                                                  child: Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment
+                                                        .spaceBetween,
+                                                children: [
+                                                  Expanded(
+                                                    child: Container(),
+                                                    flex: 4,
+                                                  ),
+                                                  Expanded(
+                                                    flex: 4,
+                                                    child: Text(
+                                                      "Delete",
+                                                      style: GoogleFonts.lato(
+                                                          fontSize: 21,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: Colors.white),
+                                                    ),
+                                                  ),
+                                                  const Expanded(
+                                                      flex: 3,
+                                                      child: Icon(
+                                                        Iconsax.trash,
+                                                        color: Colors.white,
+                                                      ))
+                                                ],
+                                              )),
+                                            ),
+                                          ),
                                         ],
-                                      )),
-                                    ),
-                                  ),
-                                  GestureDetector(
-                                    child: Container(
-                                      margin: const EdgeInsets.only(left:20,right:20,bottom:20),
-                                      decoration: BoxDecoration(
-                                        color: Colors.black26,                                        
-                                        borderRadius: BorderRadius.circular(30)
                                       ),
-                                      height: 55,
-                                      child: Center(child: Row(
-                                        
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Expanded(child: Container(),flex: 4,),
-                                          Expanded(
-                                            flex: 4,
-                                            child: Text("Description",style: GoogleFonts.lato(
-                                                                              fontSize: 21, fontWeight: FontWeight.bold,color: Colors.white),),
-                                          ),
-                                    const Expanded(
-                                      flex: 3,
-                                      child:  Icon(Iconsax.clipboard_text,color: Colors.white,))
-                                        ],
-                                      )),
-                                    ),
-                                  ),
-                                  GestureDetector(
-                                    child: Container(
-                                      margin: const EdgeInsets.only(left:20,right:20,bottom:20),
-                                      decoration: BoxDecoration(
-                                        color: Colors.red.shade300,                                        
-                                        borderRadius: BorderRadius.circular(30)
-                                      ),
-                                      height: 55,
-                                      child: Center(child: Row(
-                                        
-                                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          Expanded(child: Container(),flex: 4,),
-                                          Expanded(
-                                            flex: 4,
-                                            child: Text("Delete",style: GoogleFonts.lato(
-                                                                              fontSize: 21, fontWeight: FontWeight.bold,color: Colors.white),),
-                                          ),
-                                    const Expanded(
-                                      flex: 3,
-                                      child:  Icon(Iconsax.trash,color: Colors.white,))
-                                        ],
-                                      )),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },) : null;
+                                    );
+                                  },
+                                )
+                              : null;
                         },
                         onTap: () {
                           print(record['id']);
                           ProjectId = record['id'];
-                          ProjectName=record['name'];
+                          ProjectName = record['name'];
+                          Project_deadline=record['date'];
                           Get.to(() => TasksSwipe());
                         },
                       ),
@@ -290,7 +422,7 @@ class _pagethreeState extends State<pagethree> {
                 if (snapshot.hasError) {
                   return const Text("something went wrong");
                 }
-                return const CircularProgressIndicator(
+                return const SpinKitFadingFour(
                   color: Color.fromARGB(255, 120, 100, 156),
                 );
               }
@@ -305,30 +437,34 @@ class _pagethreeState extends State<pagethree> {
             print(snapshot.data);
             if (snapshot.data) {
               return FloatingActionButton.extended(
-              onPressed: () {
-                Get.to(add_project());
-              },
-              backgroundColor: Colors.white,
-              tooltip: 'Increment',
-              elevation: 30,
-              label: const Text(
-                "Add",
-                style: TextStyle(color: Color.fromARGB(255, 120, 100, 156)),
-              ),
-              icon: const Icon(
-                Icons.add,
-                color: Color.fromARGB(255, 120, 100, 156),
-                size: 30,
-              ),
+                onPressed: () {
+                  Get.to(add_project());
+                },
+                backgroundColor: Colors.white,
+                tooltip: 'Increment',
+                elevation: 30,
+                label: const Text(
+                  "Add",
+                  style: TextStyle(color: Color.fromARGB(255, 120, 100, 156)),
+                ),
+                icon: const Icon(
+                  Icons.add,
+                  color: Color.fromARGB(255, 120, 100, 156),
+                  size: 30,
+                ),
+              );
+            } else {
+              return const SizedBox(
+                width: 0,
+                height: 0,
+              );
+            }
+          } else {
+            return const SizedBox(
+              width: 0,
+              height: 0,
             );
-            }else{
-            return const SizedBox(width: 0,height: 0,);
           }
-            
-          }else{
-            return const SizedBox(width: 0,height: 0,);
-          }
-          
         },
 
         /* FloatingActionButton.extended(

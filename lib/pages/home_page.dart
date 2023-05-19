@@ -1,8 +1,10 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:date_picker_timeline/date_picker_timeline.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:iconsax/iconsax.dart';
 import 'package:intl/intl.dart';
 import 'package:testing/pages/pagethree.dart';
 import 'package:testing/pages/profil.dart';
@@ -19,7 +21,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int project_id = 0;
   Future<dynamic> fetchtasks() async {
-    await check();
+    //await check();
 
     var res = await orpc.callKw({
       'model': 'project.task',
@@ -47,7 +49,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<dynamic> fetchProjects() async {
-    await check();
+    //await check();
     return await orpc.callKw({
       'model': 'project.project',
       'method': 'search_read',
@@ -236,10 +238,9 @@ class _HomePageState extends State<HomePage> {
                     if (snapshot.hasError) {
                       return const Text("something went wrong");
                     }
-                    return const Center(
-                      child: CircularProgressIndicator(
+                    return const SpinKitFadingFour(
                         color: Color.fromARGB(255, 120, 100, 156),
-                      ),
+                      
                     );
                   }
                 }),

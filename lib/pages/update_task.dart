@@ -1,3 +1,4 @@
+import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
@@ -10,7 +11,7 @@ import 'controller/controller.dart';
 import 'home.dart';
 
 Future<dynamic> fetchUsers() async {
-  await check();
+  //await check();
   var res = await orpc.callKw({
     'model': 'res.users',
     'method': 'search_read',
@@ -155,8 +156,8 @@ class _UpdateTaskState extends State<UpdateTask> {
 
   var record = Get.arguments;
   Future updateTask(String name, String description, String deadline,
-      List<dynamic> ids) async {        
-    await check();    
+      List<dynamic> ids) async {
+    //await check();
     var res = await orpc.callKw({
       'model': 'project.task',
       'method': 'write',
@@ -164,9 +165,11 @@ class _UpdateTaskState extends State<UpdateTask> {
         record['id'],
         {
           'name': name.isEmpty ? record['name'] : name,
-          'description': description.isEmpty ?record['description'] : description,
-          'date_deadline': deadline.isEmpty ? record['date_deadline'] : deadline,
-          'user_ids':ids.isEmpty ? record['user_ids'] : ids
+          'description':
+              description.isEmpty ? record['description'] : description,
+          'date_deadline':
+              deadline.isEmpty ? record['date_deadline'] : deadline,
+          'user_ids': ids.isEmpty ? record['user_ids'] : ids
         }
       ],
       'domain': [],
@@ -176,7 +179,7 @@ class _UpdateTaskState extends State<UpdateTask> {
 
     return res;
   }
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -194,7 +197,7 @@ class _UpdateTaskState extends State<UpdateTask> {
                       },
                       icon: const Icon(Icons.arrow_back_ios))),
               const Padding(
-                padding: EdgeInsets.only(left: 38.0, top: 20, bottom: 30),
+                padding: EdgeInsets.only(left: 38.0, top: 20, bottom: 20),
                 child: Text(
                   "Update a task",
                   style: TextStyle(
@@ -343,20 +346,44 @@ class _UpdateTaskState extends State<UpdateTask> {
                                     ),
                                     GestureDetector(
                                       onTap: () async {
-                                        await updateTask(
-                                            taskName.text,
-                                            taskDescription.text,
-                                            taskdeadline.text,
-                                            ids);
-                                        Fluttertoast.showToast(
-                                          msg: "Task updated !",
-                                          toastLength: Toast.LENGTH_SHORT,
-                                        );
-                                        sendNotificaton(
-                                            "Task updated",
-                                            "task '${taskName.text.isEmpty ? record['name']: taskName.text}' updated in project : $ProjectName",
-                                            ProjectId.toString());
-                                        Navigator.pop(context);
+                                        if (DateTime.parse(taskdeadline.text)
+                                                .isAfter(DateTime.now()) &&
+                                            DateTime.parse(taskdeadline.text)
+                                                .isBefore(DateTime.parse(
+                                                    Project_deadline))) {
+                                          await updateTask(
+                                              taskName.text,
+                                              taskDescription.text,
+                                              taskdeadline.text,
+                                              ids);
+                                          Fluttertoast.showToast(
+                                            msg: "Task updated !",
+                                            toastLength: Toast.LENGTH_SHORT,
+                                          );
+                                          sendNotificaton(
+                                              "Task updated",
+                                              "task '${taskName.text.isEmpty ? record['name'] : taskName.text}' updated in project : $ProjectName",
+                                              ProjectId.toString());
+                                          Navigator.pop(context);
+                                        } else {
+                                          Flushbar(
+                                            title: "Error !",
+                                            message: "invalid deadline date",
+                                            duration:
+                                                const Duration(seconds: 3),
+                                            padding: const EdgeInsets.all(20),
+                                            icon: const Icon(
+                                              Icons.warning,
+                                              size: 35,
+                                              color: Colors.white,
+                                            ),
+                                            flushbarPosition:
+                                                FlushbarPosition.TOP,
+                                            backgroundColor:
+                                                const Color.fromARGB(
+                                                    255, 120, 100, 156),
+                                          ).show(context);
+                                        }
                                       },
                                       child: Container(
                                         padding: const EdgeInsets.symmetric(

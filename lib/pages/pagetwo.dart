@@ -1,6 +1,7 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -17,7 +18,7 @@ class pagetwo extends StatefulWidget {
 
 class _pagetwoState extends State<pagetwo> {
   Future<dynamic> fetchcontacts() async {
-    await check();
+    //await check();
     return orpc.callKw({
       'model': 'res.partner',
       'method': 'search_read',
@@ -39,7 +40,7 @@ class _pagetwoState extends State<pagetwo> {
   }
 
   Future addContact(String name, String email, String phone) async {
-    await check();
+    //await check();
     var res = await orpc.callKw({
       'model': 'res.partner',
       'method': 'create',
@@ -276,11 +277,10 @@ class _pagetwoState extends State<pagetwo> {
                       if (snapshot.hasError) {
                         return const Text("something went wrong");
                       }
-                      return const Center(
-                        child: CircularProgressIndicator(
-                          color: Color.fromARGB(255, 120, 100, 156),
-                        ),
-                      );
+                      return const SpinKitFadingFour(
+                        color: Color.fromARGB(255, 120, 100, 156),
+                      
+                    );
                     }
                   },
                 ),
@@ -336,7 +336,7 @@ class _pagetwoState extends State<pagetwo> {
                       )),
                   TextButton(
                       onPressed: () async {
-                        await check();
+                        //await check();
                         await addContact(contactName.text
                         , contactEmail.text, contactPhone.text);
                         Fluttertoast.showToast(

@@ -3,6 +3,7 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:hive/hive.dart';
 import 'package:testing/components/LoginPageComponents/PasswordTextfield.dart';
@@ -52,7 +53,7 @@ class _LoginPageState extends State<LoginPage> {
     super.initState();
     createBox();    
   }
-
+  var isloading=true;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -108,18 +109,23 @@ class _LoginPageState extends State<LoginPage> {
                   duration: const Duration(milliseconds: 500),
                   delay: const Duration(milliseconds: 1100),
                   child: MyButton(
-                    text: const Text(
+                    text:isloading ? const Text(
                       " Login",
                       style: TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                           fontSize: 19,
                           letterSpacing: 1),
+                    ) :const SpinKitThreeInOut(
+                      color: Colors.white,
+                      size: 20,
                     ),
                     onTap: () async {
                       name = usernameController.text;
                       pass = passwordController.text;
-                      
+                      setState(() {
+                        isloading=!isloading;
+                      }); 
                       try {
                         print(name);
                         print(pass);
@@ -133,7 +139,9 @@ class _LoginPageState extends State<LoginPage> {
                       } on OdooException catch (e) {
                       } finally {
                         if (x == null) {
-                          
+                          setState(() {
+                        isloading=!isloading;
+                      }); 
                           showflushbar(
                               "Error !", "wrong password or username ");
                         } else {

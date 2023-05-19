@@ -1,3 +1,4 @@
+import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
@@ -10,26 +11,26 @@ import 'controller/controller.dart';
 import 'home.dart';
 
 Future<dynamic> fetchUsers() async {
-    await check();
-    var res = await orpc.callKw({
-      'model': 'res.users',
-      'method': 'search_read',
-      'args': [],
-      'kwargs': {
-        'context': {'bin_size': true},
-        'domain': [
-          ['share', '=', false]
-        ],
-        'fields': [
-          'id',
-          'name',
-        ],
-        'limit': 10,
-      }
-    });
-    
-    return res;
-  }
+  //await check();
+  var res = await orpc.callKw({
+    'model': 'res.users',
+    'method': 'search_read',
+    'args': [],
+    'kwargs': {
+      'context': {'bin_size': true},
+      'domain': [
+        ['share', '=', false]
+      ],
+      'fields': [
+        'id',
+        'name',
+      ],
+      'limit': 10,
+    }
+  });
+
+  return res;
+}
 
 class MultiSelect extends StatefulWidget {
   final List<String> items;
@@ -120,16 +121,12 @@ class _AddTaskState extends State<AddTask> {
   List<dynamic> ids = [];
 
   void _showMultiSelect() async {
-
     var res = await fetchUsers();
-    
-    final List<String> items = [
-      
-    ];
+
+    final List<String> items = [];
     for (var x in res) {
       items.add(x['name']);
     }
-    
 
     final List<String>? results = await showDialog(
       context: context,
@@ -146,20 +143,20 @@ class _AddTaskState extends State<AddTask> {
     }
     print(_selectedItems);
     for (var i in _selectedItems) {
-       print(i);
-      
-     }
-     
-     
-     for (var i in _selectedItems) {
-       var result = res.firstWhere((value) => value["name"] == i, orElse: () => null);      
+      print(i);
+    }
+
+    for (var i in _selectedItems) {
+      var result =
+          res.firstWhere((value) => value["name"] == i, orElse: () => null);
       ids.add(result["id"]);
-      
-     }
-print(ids);
+    }
+    print(ids);
   }
-  Future addTask(String name, String description, String deadline,List<dynamic> ids) async {
-    await check();    
+
+  Future addTask(String name, String description, String deadline,
+      List<dynamic> ids) async {
+    //await check();
     var res = await orpc.callKw({
       'model': 'project.task',
       'method': 'create',
@@ -169,7 +166,7 @@ print(ids);
           'description': description,
           'date_deadline': deadline,
           'project_id': ProjectId,
-          'user_ids':ids
+          'user_ids': ids
         },
       ],
       'domain': [],
@@ -180,11 +177,9 @@ print(ids);
     return res;
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      
       body: SingleChildScrollView(
         child: Container(
           padding: EdgeInsets.only(top: Get.height * 0.06),
@@ -245,8 +240,11 @@ print(ids);
                                             data: Theme.of(context).copyWith(
                                               colorScheme:
                                                   const ColorScheme.light(
-                                                primary: Color.fromARGB(255, 120,
-                                                    100, 156), // <-- SEE HERE
+                                                primary: Color.fromARGB(
+                                                    255,
+                                                    120,
+                                                    100,
+                                                    156), // <-- SEE HERE
                                                 // <-- SEE HERE
                                               ),
                                               textButtonTheme:
@@ -293,8 +291,9 @@ print(ids);
                                       padding: EdgeInsets.all(18),
                                       decoration: BoxDecoration(
                                         borderRadius: BorderRadius.circular(30),
-                                        color: Color.fromARGB(255, 120, 100, 156)
-                                            .withOpacity(0.8),
+                                        color:
+                                            Color.fromARGB(255, 120, 100, 156)
+                                                .withOpacity(0.8),
                                       ),
                                       child: const Text(
                                         "Select assigned users",
@@ -306,57 +305,115 @@ print(ids);
                                         textAlign: TextAlign.center,
                                       )),
                                 ),
-      
+
                                 // display selected items
                                 Wrap(
                                   children: _selectedItems
-                                      .map((e) => Chip(                                        
+                                      .map((e) => Chip(
                                             label: Text(e),
                                           ))
                                       .toList(),
                                 ),
-                                SizedBox(height: Get.height*0.12,),
+                                SizedBox(
+                                  height: Get.height * 0.12,
+                                ),
                                 Row(
-                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
                                   children: [
                                     GestureDetector(
                                       onTap: () {
                                         Get.back();
                                       },
                                       child: Container(
-                                        padding:const EdgeInsets.symmetric(horizontal: 40,vertical: 20),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 40, vertical: 20),
                                         decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(30),
-                                          color:const Color.fromARGB(255, 120, 100, 156)
+                                            borderRadius:
+                                                BorderRadius.circular(30),
+                                            color: const Color.fromARGB(
+                                                255, 120, 100, 156)),
+                                        child: const Text(
+                                          "Cancel",
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold),
                                         ),
-                                        child:const Text("Cancel",style: TextStyle(
-                                          color: Colors.white,fontWeight: FontWeight.bold
-                                        ),),
                                       ),
                                     ),
                                     GestureDetector(
-                                      onTap: ()async {
-                                        await addTask(taskName.text, taskDescription.text,
-                            taskdeadline.text,ids);
-                        Fluttertoast.showToast(
-                          msg: "Task added !",
-                          toastLength: Toast.LENGTH_SHORT,
-                        );
-                        sendNotificaton(
-                            "Task added",
-                            "task '${taskName.text}' added in project : $ProjectName",
-                            ProjectId.toString());
-                        Navigator.pop(context);
+                                      onTap: () async {
+                                        if (taskName.text.isNotEmpty &&
+                                      taskDescription.text.isNotEmpty &&                                      
+                                      taskdeadline.text.isNotEmpty) {
+                                          if (DateTime.parse(taskdeadline.text)
+                                            .isAfter(DateTime.now()) && DateTime.parse(taskdeadline.text).isBefore(DateTime.parse(Project_deadline))) {
+                                          await addTask(
+                                              taskName.text,
+                                              taskDescription.text,
+                                              taskdeadline.text,
+                                              ids);
+                                          Fluttertoast.showToast(
+                                            msg: "Task added !",
+                                            toastLength: Toast.LENGTH_SHORT,
+                                          );
+                                          sendNotificaton(
+                                              "Task added",
+                                              "task '${taskName.text}' added in project : $ProjectName",
+                                              ProjectId.toString());
+                                          Navigator.pop(context);
+                                        } else {
+                                          Flushbar(
+                                            title: "Error !",
+                                            message: "invalid deadline date",
+                                            duration:
+                                                const Duration(seconds: 3),
+                                            padding: const EdgeInsets.all(20),
+                                            icon: const Icon(
+                                              Icons.warning,
+                                              size: 35,
+                                              color: Colors.white,
+                                            ),
+                                            flushbarPosition:
+                                                FlushbarPosition.TOP,
+                                            backgroundColor:
+                                                const Color.fromARGB(
+                                                    255, 120, 100, 156),
+                                          ).show(context);
+                                        }
+                                        }else{
+                                          Flushbar(
+                                        title: "Error !",
+                                        message:
+                                            "fill all the fields Please !",
+                                        duration: const Duration(seconds: 3),
+                                        padding: const EdgeInsets.all(20),
+                                        icon: const Icon(
+                                          Icons.warning,
+                                          size: 35,
+                                          color: Colors.white,
+                                        ),
+                                        flushbarPosition: FlushbarPosition.TOP,
+                                        backgroundColor: const Color.fromARGB(
+                                            255, 120, 100, 156),
+                                      ).show(context);
+                                        }
+                                        
                                       },
                                       child: Container(
-                                        padding:const EdgeInsets.symmetric(horizontal: 40,vertical: 20),
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 40, vertical: 20),
                                         decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(30),
-                                          color:const Color.fromARGB(255, 120, 100, 156)
+                                            borderRadius:
+                                                BorderRadius.circular(30),
+                                            color: const Color.fromARGB(
+                                                255, 120, 100, 156)),
+                                        child: const Text(
+                                          "Add",
+                                          style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.bold),
                                         ),
-                                        child:const Text("Add",style: TextStyle(
-                                          color: Colors.white,fontWeight: FontWeight.bold
-                                        ),),
                                       ),
                                     )
                                   ],

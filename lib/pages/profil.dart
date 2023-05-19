@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:get/get.dart';
 import 'package:hive/hive.dart';
 import 'package:testing/main.dart';
@@ -17,7 +19,7 @@ class ProfilPage extends StatefulWidget {
 
 class _ProfilPageState extends State<ProfilPage> {
   Future<dynamic> fetchUserInfo() async {
-    await check();
+    //await check();
     var res = await orpc.callKw({
       'model': 'res.users',
       'method': 'read',
@@ -187,23 +189,24 @@ class _ProfilPageState extends State<ProfilPage> {
                       child: GestureDetector(
                         onTap: () {
                           showDialog(context: context, builder: (context) {
-                            return  AlertDialog(
-                              title: const Text("Log out ?",style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold),),
-                              //content:const Text("Are you sure ?",style: TextStyle(color: Color.fromARGB(255, 120, 100, 156),),),
-                              actions: <Widget>[
-                                
-                                TextButton(onPressed: (){
-                                  Get.back();
-                                }, child: const Text("No",style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold),)),
-                                TextButton(onPressed: ()async{
-                                  box1 = await Hive.openBox('loginData');
-                                  box1.clear();
-                                  x=null;
-                                  messaging.unsubscribeFromTopic(session.userId.toString());
-                                  Get.offAll(const LoginPage());
-                                }, child: const Text("Yes",style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold))),
-
-                              ],
+                            return  FadeInUp(
+                              child: AlertDialog(
+                                title: const Text("Log out ?",style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold),),
+                                //content:const Text("Are you sure ?",style: TextStyle(color: Color.fromARGB(255, 120, 100, 156),),),
+                                actions: <Widget>[                                  
+                                  TextButton(onPressed: (){
+                                    Get.back();
+                                  }, child: const Text("No",style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold),)),
+                                  TextButton(onPressed: ()async{
+                                    box1 = await Hive.openBox('loginData');
+                                    box1.clear();
+                                    x=null;
+                                    messaging.unsubscribeFromTopic(session.userId.toString());
+                                    Get.offAll(const LoginPage());
+                                  }, child: const Text("Yes",style: TextStyle(color: Colors.black,fontWeight: FontWeight.bold))),
+                            
+                                ],
+                              ),
                             );
                             
                           },);
@@ -240,11 +243,10 @@ class _ProfilPageState extends State<ProfilPage> {
             if (snapshot.hasError) {
               return const Text("something went wrong");
             }
-            return const Center(
-              child: CircularProgressIndicator(
-                color: Color.fromARGB(255, 120, 100, 156),
-              ),
-            );
+            return const SpinKitFadingFour(
+                        color: Color.fromARGB(255, 120, 100, 156),
+                      
+                    );
           }
         },
       ),

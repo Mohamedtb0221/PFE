@@ -1,3 +1,4 @@
+import 'package:another_flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
@@ -20,23 +21,28 @@ class _Update_projectState extends State<Update_project> {
   TextEditingController taskDescription = TextEditingController();
   TextEditingController taskdeadline = TextEditingController();
   TextEditingController taskStart = TextEditingController();
-
+  var record = Get.arguments;
   Future updateProject(
     String name,
     String description,
     String startdate,
     String deadline,
   ) async {
-    await check();
+    //await check();
+    print(record['name']);
+    print(record['description']);
+    print(record['date_start']);
+    print(record['date']);
     var res = await orpc.callKw({
       'model': 'project.project',
       'method': 'write',
       'args': [
+         record['id'],
         {
-          'name': name,
-          'description': description,
-          'date_start': startdate,
-          'date': deadline,
+          'name':  name.isEmpty ? record['name'] : name,
+          'description': description.isEmpty ?record['description'] : description,
+          'date_start': startdate.isEmpty ? record['date_start'] : startdate,
+          'date': deadline.isEmpty ? record['date'] : deadline,
         },
       ],
       'domain': [],
@@ -223,7 +229,14 @@ class _Update_projectState extends State<Update_project> {
                               ),
                               GestureDetector(
                                 onTap: () async {
-                                  await updateProject(
+                                  
+                                  if (DateTime.parse(taskStart.text).isBefore(
+                                            DateTime.parse(
+                                                taskdeadline.text)) &&
+                                        DateTime.parse(taskStart.text)
+                                            .isAfter(DateTime.now())) {
+
+                                    await updateProject(
                                     taskName.text,
                                     taskDescription.text,
                                     taskStart.text,
@@ -239,6 +252,24 @@ class _Update_projectState extends State<Update_project> {
                                             ProjectId.toString());*/
 
                                   Get.back();
+                                  }else{
+                                    Flushbar(
+                                        title: "Error !",
+                                        message:
+                                            "invalid start date or end date",
+                                        duration: const Duration(seconds: 3),
+                                        padding: const EdgeInsets.all(20),
+                                        icon: const Icon(
+                                          Icons.warning,
+                                          size: 35,
+                                          color: Colors.white,
+                                        ),
+                                        flushbarPosition: FlushbarPosition.TOP,
+                                        backgroundColor: const Color.fromARGB(
+                                            255, 120, 100, 156),
+                                      ).show(context);
+                                  }
+                                  
                                 },
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(

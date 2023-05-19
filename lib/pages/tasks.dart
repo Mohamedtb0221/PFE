@@ -1,6 +1,7 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:iconsax/iconsax.dart';
@@ -30,8 +31,9 @@ class _TasksState extends State<Tasks> {
   var x;
 
   Future<dynamic> fetchcontacts() async {
-    await check();
-    return orpc.callKw({
+    //await check();
+    print(tasksList);
+    return tasksList.isEmpty ? orpc.callKw({
       'model': 'project.project',
       'method': 'search_read',
       'args': [],
@@ -41,7 +43,7 @@ class _TasksState extends State<Tasks> {
         'fields': ['id', 'name', 'task_count', 'date_start', 'date'],
         'limit': 10,
       }
-    });
+    }) : tasksList;
   }
 
   Widget builditem(Map<String, dynamic> record,
@@ -68,6 +70,9 @@ class _TasksState extends State<Tasks> {
                   : record['kanban_state'] == 'done'
                       ? Icons.check
                       : Icons.crop_square),
+            ),
+            SizedBox(
+              width: 30,
             ),
             Expanded(
               child: Column(
@@ -133,7 +138,7 @@ class _TasksState extends State<Tasks> {
                                         )),
                                     TextButton(
                                         onPressed: () async {
-                                          await check();
+                                          //await check();
                                           var res = await orpc.callKw({
                                             'model': 'project.task',
                                             'method': 'write',
@@ -156,8 +161,7 @@ class _TasksState extends State<Tasks> {
                                                 " completed in project : $ProjectName",
                                             managerId.toString());
                                         Navigator.pop(context);
-                                          return res;
-                                          
+                                          return res;                                          
                                         },
                                         child: const Text("Yes",
                                             style: TextStyle(
@@ -243,7 +247,7 @@ class _TasksState extends State<Tasks> {
                                       )),
                                   TextButton(
                                       onPressed: () async {
-                                        await check();
+                                       // await check();
                                         var res = await orpc.callKw({
                                           'model': 'project.task',
                                           'method': 'unlink',
@@ -284,166 +288,7 @@ class _TasksState extends State<Tasks> {
                         label: "update",
                         onTap: () {
                           Get.to(UpdateTask(), arguments: record);
-                          /*showDialog(
-                              context: context,
-                              builder: (context) {
-                                return AlertDialog(
-                                  title: const Center(
-                                      child: Text(
-                                    'modify a task',
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold),
-                                  )),
-                                  content: Form(
-                                    key: formKey,
-                                    child: Container(
-                                      height: 250,
-                                      child: SingleChildScrollView(
-                                        child: Column(
-                                          children: [
-                                            MyTextFormField(
-                                              controller: taskName1,
-                                              hintText: 'Task Name',
-                                              obscureText: false,
-                                            ),
-                                            const SizedBox(
-                                              height: 20,
-                                            ),
-                                            MyTextFormField(
-                                              controller: taskDescription1,
-                                              hintText: 'Task Description',
-                                              obscureText: false,
-                                            ),
-                                            const SizedBox(
-                                              height: 30,
-                                            ),
-                                            MyTextFormField(
-                                              controller: taskdeadline,
-                                              hintText: 'Task deadline',
-                                              obscureText: false,
-                                              suffixIcon: IconButton(
-                                                icon: const Icon(
-                                                    Icons.date_range),
-                                                onPressed: () {
-                                                  showDatePicker(
-                                                          builder:
-                                                              (context, child) {
-                                                            return Theme(
-                                                              data: Theme.of(
-                                                                      context)
-                                                                  .copyWith(
-                                                                colorScheme:
-                                                                    const ColorScheme
-                                                                        .light(
-                                                                  primary: Color
-                                                                      .fromARGB(
-                                                                          255,
-                                                                          120,
-                                                                          100,
-                                                                          156), // <-- SEE HERE
-                                                                ),
-                                                                textButtonTheme:
-                                                                    TextButtonThemeData(
-                                                                  style: TextButton
-                                                                      .styleFrom(
-                                                                    primary: const Color
-                                                                            .fromARGB(
-                                                                        255,
-                                                                        120,
-                                                                        100,
-                                                                        156), // button text color
-                                                                  ),
-                                                                ),
-                                                              ),
-                                                              child: child!,
-                                                            );
-                                                          },
-                                                          context: context,
-                                                          initialDate:
-                                                              DateTime.now(),
-                                                          firstDate:
-                                                              DateTime(2000),
-                                                          lastDate:
-                                                              DateTime(2035))
-                                                      .then((value) {
-                                                    setState(() {
-                                                      taskdeadline.text =
-                                                          DateFormat(
-                                                                  'yyyy-MM-dd')
-                                                              .format(value!);
-                                                    });
-                                                  });
-                                                },
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  actions: [
-                                    Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 18.0, vertical: 9),
-                                      child: TextButton(
-                                        style: ButtonStyle(
-                                            backgroundColor:
-                                                MaterialStateProperty.all(
-                                                    const Color.fromARGB(
-                                                        255, 120, 100, 156))),
-                                        child: const Text(
-                                          'Save',
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                        onPressed: () async {
-                                          if (formKey.currentState!
-                                              .validate()) {
-                                            print("valedated");
-                                            await check();
-
-                                            var res = await orpc.callKw({
-                                              'model': 'project.task',
-                                              'method': 'write',
-                                              'args': [
-                                                record['id'],
-                                                {
-                                                  'name': taskName1.text,
-                                                  'description':
-                                                      taskDescription1.text,
-                                                  'date_deadline':
-                                                      taskdeadline.text
-                                                }
-                                              ],
-                                              'domain': [],
-                                              'kwargs': {}
-                                            });
-                                            refresh();
-
-                                            sendNotificaton(
-                                                "Task Updated",
-                                                "task " +
-                                                    record['name'] +
-                                                    " has been updated in project : $ProjectName",
-                                                ProjectId.toString());
-                                            Fluttertoast.showToast(
-                                              msg: "Task modified",
-                                              toastLength: Toast.LENGTH_SHORT,
-                                            );
-
-                                            Navigator.pop(context);
-                                            return res;
-                                          } else {
-                                            print("error");
-                                          }
-                                          ;
-                                        },
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              });*/
+                          
                         },
                       ),
                       SpeedDialChild(
@@ -631,11 +476,10 @@ class _TasksState extends State<Tasks> {
                       if (snapshot.hasError) {
                         return const Text("something went wrong");
                       }
-                      return const Center(
-                        child: CircularProgressIndicator(
-                          color: Color.fromARGB(255, 120, 100, 156),
-                        ),
-                      );
+                      return const SpinKitFadingFour(
+                        color: Color.fromARGB(255, 120, 100, 156),
+                      
+                    );
                     }
                   },
                 ),

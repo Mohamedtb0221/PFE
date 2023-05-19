@@ -12,7 +12,7 @@ class TasksSwipe extends StatefulWidget {
   State<TasksSwipe> createState() => _TasksSwipeState();
 }
 Future<dynamic> fetchtasks() async {
-    await check();
+    //await check();
 
     var res = await orpc.callKw({
       'model': 'project.task',

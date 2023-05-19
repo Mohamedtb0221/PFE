@@ -25,8 +25,7 @@ getMessage() {
       'body': event.notification!.body,
       'day':day,
       'time':time,
-    };
-    
+    };    
     recievedNotifications.insert(0,data);
     box2.put('notification', recievedNotifications);    
     print(event.notification!.title);

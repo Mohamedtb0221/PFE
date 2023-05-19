@@ -1,6 +1,7 @@
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:testing/pages/swipe.dart';
 
 import 'home.dart';
@@ -59,7 +60,7 @@ class _NotificationHistoryState extends State<NotificationHistory> {
                     margin: const EdgeInsets.all(3),
                     width: Get.width,
                     height: Get.height * 0.7,
-                    child: ListView.builder(
+                    child: recievedNotifications.isNotEmpty ? ListView.builder(
                       itemCount: recievedNotifications.length,
                       itemBuilder: (context, index) {
                         var message;
@@ -100,7 +101,15 @@ class _NotificationHistoryState extends State<NotificationHistory> {
                           ),
                         );
                       },
-                    ),
+                    ) : Container(
+                            margin: const EdgeInsets.only(top: 100),
+                            child: Text(
+                              "You have no notifications yet !",
+                              style: GoogleFonts.lato(
+                                  fontSize: 20, fontWeight: FontWeight.w500,color: Color.fromARGB(137, 3, 3, 3)),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
                   ),
                 ),
               ),

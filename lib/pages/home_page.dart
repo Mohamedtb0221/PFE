@@ -8,6 +8,7 @@ import 'package:iconsax/iconsax.dart';
 import 'package:intl/intl.dart';
 import 'package:testing/pages/pagethree.dart';
 import 'package:testing/pages/profil.dart';
+import 'package:testing/pages/swipe.dart';
 import 'home.dart';
 import 'notifications_history.dart';
 
@@ -94,6 +95,7 @@ class _HomePageState extends State<HomePage> {
             padding: const EdgeInsets.only(right: 8.0, left: 5),
             child: IconButton(
                 onPressed: () {
+                  print(recievedNotifications);
                   Get.to(() => const NotificationHistory());
                 },
                 icon: const Icon(Icons.notifications)),
@@ -135,7 +137,7 @@ class _HomePageState extends State<HomePage> {
                 setState(() {
                   selecteddate = selectedDate;
                 });
-                print(selecteddate);
+               // print(selecteddate);
               },
             ),
           ),
@@ -157,9 +159,7 @@ class _HomePageState extends State<HomePage> {
                             DateTime.parse(element['date_deadline'])
                                 .isAfter(selecteddate))
                         .toList();
-                    print('----------------------');
-                    print(filteredData);
-                    print('----------------------');
+                    
                     return filteredData.length != 0
                         ? Column(
                             children: [

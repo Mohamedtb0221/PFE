@@ -149,8 +149,7 @@ class _LoginPageState extends State<LoginPage> {
                           if (isChecked!) {
                             box1.put('username', name);
                             box1.put('password', pass);
-                            box3.put('username', name);
-                            
+                            box3.put('username', name);                            
                           }
                           Get.off(() => const Swipe(),
                               transition: Transition.downToUp);

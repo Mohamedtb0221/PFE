@@ -4,6 +4,7 @@ import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:html/parser.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:testing/pages/home.dart';
 import 'package:testing/pages/notifications_history.dart';
@@ -13,8 +14,9 @@ import 'package:testing/pages/update_project.dart';
 import 'add_project.dart';
 
 int ProjectId = 0;
+int managerId = 0;
 String ProjectName = "";
-String Project_deadline="";
+String Project_deadline = "";
 
 bool is_admin = false;
 Future<dynamic> isAdmin() async {
@@ -51,7 +53,15 @@ Future<dynamic> fetchProjects() async {
     'kwargs': {
       'context': {'bin_size': true},
       'domain': [],
-      'fields': ['id', 'name', 'task_count', 'date_start', 'date'],
+      'fields': [
+        'id',
+        'name',
+        'description',
+        'task_count',
+        'date_start',
+        'date',
+        'user_id'
+      ],
       'limit': 50,
     }
   });
@@ -243,6 +253,142 @@ class _pagethreeState extends State<pagethree> {
                                             ),
                                           ),
                                           GestureDetector(
+                                            onTap: () {
+                                              Get.back();
+                                              showDialog(
+                                                  context: context,
+                                                  builder: (context) {
+                                                    return AlertDialog(
+                                                        shape:
+                                                            RoundedRectangleBorder(
+                                                          borderRadius:
+                                                              BorderRadius
+                                                                  .circular(20),
+                                                        ),
+                                                        title: const Center(
+                                                            child: Text(
+                                                          'Project details',
+                                                          style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold),
+                                                        )),
+                                                        content: Container(
+                                                          height:
+                                                              Get.height * 0.5,
+                                                          child: Padding(
+                                                            padding:
+                                                                const EdgeInsets
+                                                                        .only(
+                                                                    top: 25.0),
+                                                            child: Column(
+                                                              mainAxisAlignment:
+                                                                  MainAxisAlignment
+                                                                      .start,
+                                                              crossAxisAlignment:
+                                                                  CrossAxisAlignment
+                                                                      .start,
+                                                              children: [
+                                                                RichText(
+                                                                  text: TextSpan(
+                                                                      children: [
+                                                                        const TextSpan(
+                                                                          text:
+                                                                              "manager :",
+                                                                          style:
+                                                                              TextStyle(
+                                                                                fontSize: 18,
+                                                                            fontWeight:
+                                                                                FontWeight.bold,
+                                                                                color: Colors.black,
+                                                                            decoration:
+                                                                                TextDecoration.underline,
+                                                                          ),
+                                                                        ),
+                                                                        TextSpan(
+                                                                          // ignore: prefer_interpolation_to_compose_strings
+                                                                          text: " "+record['user_id'][1] ,
+                                                                          style:
+                                                                              const TextStyle(
+                                                                                color: Colors.black,
+                                                                            fontSize:
+                                                                                18,
+                                                                          ),
+                                                                        )
+                                                                      ]),
+                                                                ),
+                                                                const SizedBox(
+                                                                  height: 10,
+                                                                ),
+                                                                RichText(
+                                                                  text: TextSpan(
+                                                                      children: [
+                                                                        const TextSpan(
+                                                                          text:
+                                                                              "description :",
+                                                                          style:
+                                                                              TextStyle(
+                                                                                fontSize: 18,
+                                                                            fontWeight:
+                                                                                FontWeight.bold,
+                                                                                color: Colors.black,
+                                                                            decoration:
+                                                                                TextDecoration.underline,
+                                                                          ),
+                                                                        ),
+                                                                        TextSpan(
+                                                                          // ignore: prefer_interpolation_to_compose_strings, unrelated_type_equality_checks
+                                                                          text: record['description'] == false || record['description'] == ""
+                                                                              ? " there's no description"
+                                                                              : " ${parse(record['description']).documentElement!.text}",
+                                                                          style:
+                                                                              const TextStyle(
+                                                                                color: Colors.black,
+                                                                            fontSize:
+                                                                                18,
+                                                                          ),
+                                                                        ),
+                                                                        
+                                                                      ]),
+                                                                ),
+                                                                const SizedBox(
+                                                                  height: 10,
+                                                                ),
+                                                                RichText(
+                                                                  text: TextSpan(
+                                                                      children: [
+                                                                        const TextSpan(
+                                                                          text:
+                                                                              "days left :",
+                                                                          style:
+                                                                              TextStyle(
+                                                                                fontSize: 18,
+                                                                            fontWeight:
+                                                                                FontWeight.bold,
+                                                                                color: Colors.black,
+                                                                            decoration:
+                                                                                TextDecoration.underline,
+                                                                          ),
+                                                                        ),
+                                                                        TextSpan(
+                                                                          // ignore: prefer_interpolation_to_compose_strings, unrelated_type_equality_checks
+                                                                          text: " "+int.parse(formatDuration(DateTime.parse(record['date']).difference(DateTime.now()))).toString()+" days",
+                                                                          style:
+                                                                              const TextStyle(
+                                                                                color: Colors.black,
+                                                                            fontSize:
+                                                                                18,
+                                                                          ),
+                                                                        ),
+                                                                        
+                                                                      ]),
+                                                                ),
+                                                              ],
+                                                            ),
+                                                          ),
+                                                        ));
+                                                  });
+                                            },
                                             child: Container(
                                               margin: const EdgeInsets.only(
                                                   left: 20,
@@ -267,7 +413,7 @@ class _pagethreeState extends State<pagethree> {
                                                   Expanded(
                                                     flex: 4,
                                                     child: Text(
-                                                      "Description",
+                                                      "Details",
                                                       style: GoogleFonts.lato(
                                                           fontSize: 21,
                                                           fontWeight:
@@ -411,8 +557,11 @@ class _pagethreeState extends State<pagethree> {
                           print(record['id']);
                           ProjectId = record['id'];
                           ProjectName = record['name'];
-                          Project_deadline=record['date'];
-                          Get.to(() => TasksSwipe());
+                          Project_deadline = record['date'];
+                          managerId = record['user_id'][0];
+                          Get.to(
+                            () => TasksSwipe(),
+                          );
                         },
                       ),
                     );
@@ -438,7 +587,11 @@ class _pagethreeState extends State<pagethree> {
             if (snapshot.data) {
               return FloatingActionButton.extended(
                 onPressed: () {
-                  Get.to(add_project());
+                  Get.to(
+                    add_project(),
+                    transition: Transition.rightToLeft,
+                    duration: const Duration(milliseconds: 400),
+                  );
                 },
                 backgroundColor: Colors.white,
                 tooltip: 'Increment',
@@ -486,6 +639,16 @@ class _pagethreeState extends State<pagethree> {
              ),*/
       ),
     );
+  }
+  String formatDuration(Duration duration) {
+    int days = duration.inDays;
+    int hours = duration.inHours.remainder(24);
+    int minutes = duration.inMinutes.remainder(60);
+    int seconds = duration.inSeconds.remainder(60);
+
+    String formattedDuration = days.toString();
+
+    return formattedDuration;
   }
 
   Future<void> refresh() async {

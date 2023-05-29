@@ -64,7 +64,7 @@ class _NotificationHistoryState extends State<NotificationHistory> {
                       itemCount: recievedNotifications.length,
                       itemBuilder: (context, index) {
                         var message;
-                        recievedNotifications[index]['id']==session.userId ? message = recievedNotifications[index]:index++;
+                         message = recievedNotifications[index];
                         ;
                         return FadeInRight(
                           

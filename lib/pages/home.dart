@@ -12,7 +12,7 @@ import 'package:testing/pages/notifications_history.dart';
 import 'package:testing/pages/swipe.dart';
 import 'home_page.dart';
 
-final orpc = OdooClient('http://192.168.1.105:8069/');
+final orpc = OdooClient('http://192.168.1.103:8069/');
 late Box box2;
 var session;
 Future<dynamic> check() async {
@@ -67,7 +67,7 @@ class _mywidgetState extends State<mywidget> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    createBox();
+    
   }
 
   @override
@@ -131,15 +131,5 @@ class _mywidgetState extends State<mywidget> {
     );
   }
 
-  void createBox() async {
-    box2 = await Hive.openBox('NotificationData');    
-    getData();
-  }
-
-  void getData() async {
-    if (box2.get('notification') != null) {
-      List<dynamic> data = box2.get('notification');
-      recievedNotifications = data.where((element) => element['id']==session.userId).toList();
-    }
-  }
+  
 }

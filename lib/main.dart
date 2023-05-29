@@ -5,7 +5,9 @@ import 'package:hive/hive.dart';
 import 'package:testing/pages/home.dart';
 import 'package:testing/pages/login.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:testing/pages/offline.dart';
 import 'package:testing/pages/swipe.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 void main() async {
   await Hive.initFlutter();
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,11 +24,12 @@ void main() async {
       ),
     ),
     debugShowCheckedModeBanner: false,
-    home:await testLogin() ? const Swipe() : const LoginPage(),
+    home:await checkConnection()? await testLogin() ? const Swipe() : const LoginPage() : const Offline(),
   ));
 }
-
+bool connected = true;
 testLogin()async{
+  
   box1 = await Hive.openBox('loginData');
   if (box1.get('username') != null && box1.get('password') != null){
     x = await orpc.authenticate('testdb',
@@ -38,6 +41,17 @@ testLogin()async{
   }
   return false;
 }
+checkConnection() async {
+    var result = await Connectivity().checkConnectivity();
+    if (result == ConnectivityResult.none) {
+      connected = false;
+      print("----------------$connected");
+    } else {
+      connected = true;
+      print("----------------$connected");
+    }
+    return connected;
+  }
 late Box box1;
 late Box box3;
   void createBox() async {

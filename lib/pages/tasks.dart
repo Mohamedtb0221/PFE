@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:iconsax/iconsax.dart';
 import 'package:intl/intl.dart';
 import 'package:testing/pages/add_task.dart';
@@ -33,21 +36,27 @@ class _TasksState extends State<Tasks> {
   Future<dynamic> fetchcontacts() async {
     //await check();
     print(tasksList);
-    return tasksList.isEmpty ? orpc.callKw({
-      'model': 'project.project',
-      'method': 'search_read',
-      'args': [],
-      'kwargs': {
-        'context': {'bin_size': true},
-        'domain': [],
-        'fields': ['id', 'name', 'task_count', 'date_start', 'date'],
-        'limit': 10,
-      }
-    }) : tasksList;
+    return tasksList.isEmpty
+        ? orpc.callKw({
+            'model': 'project.project',
+            'method': 'search_read',
+            'args': [],
+            'kwargs': {
+              'context': {'bin_size': true},
+              'domain': [],
+              'fields': ['id', 'name', 'task_count', 'date_start', 'date'],
+              'limit': 10,
+            }
+          })
+        : tasksList;
   }
 
-  Widget builditem(Map<String, dynamic> record,
-      SpeedDialDirection OpenDirection, double bottomMargin, bool ismanager,int managerId) {
+  Widget builditem(
+      Map<String, dynamic> record,
+      SpeedDialDirection OpenDirection,
+      double bottomMargin,
+      bool ismanager,
+      int managerId) {
     List<dynamic> assignedUsers = record['user_ids'];
     return Card(
       shape: RoundedRectangleBorder(
@@ -151,17 +160,17 @@ class _TasksState extends State<Tasks> {
                                           });
                                           print("completed");
                                           Fluttertoast.showToast(
-                                          msg: "Task completed !",
-                                          toastLength: Toast.LENGTH_SHORT,
-                                        );
-                                        sendNotificaton(
-                                            "Task Completed",
-                                            "task " +
-                                                record['name'] +
-                                                " completed in project : $ProjectName",
-                                            managerId.toString());
-                                        Navigator.pop(context);
-                                          return res;                                          
+                                            msg: "Task completed !",
+                                            toastLength: Toast.LENGTH_SHORT,
+                                          );
+                                          sendNotificaton(
+                                              "Task Completed",
+                                              "task " +
+                                                  record['name'] +
+                                                  " completed in project : $ProjectName",
+                                              managerId.toString());
+                                          Navigator.pop(context);
+                                          return res;
                                         },
                                         child: const Text("Yes",
                                             style: TextStyle(
@@ -247,7 +256,7 @@ class _TasksState extends State<Tasks> {
                                       )),
                                   TextButton(
                                       onPressed: () async {
-                                       // await check();
+                                        // await check();
                                         var res = await orpc.callKw({
                                           'model': 'project.task',
                                           'method': 'unlink',
@@ -288,13 +297,13 @@ class _TasksState extends State<Tasks> {
                         label: "update",
                         onTap: () {
                           Get.to(UpdateTask(), arguments: record);
-                          
                         },
                       ),
                       SpeedDialChild(
                         child: const Icon(Icons.description),
                         label: "See description",
                         onTap: () {
+                         
                           showDialog(
                               context: context,
                               builder: (context) {
@@ -304,22 +313,100 @@ class _TasksState extends State<Tasks> {
                                     ),
                                     title: const Center(
                                         child: Text(
-                                      'Task description',
+                                      'Task details',
                                       style: TextStyle(
                                           fontWeight: FontWeight.bold),
                                     )),
-                                    content: Padding(
-                                      padding: const EdgeInsets.only(top: 25.0),
-                                      child: Text(
-                                        record['description'] == false
-                                            ? "there's no description"
-                                            : parse(record['description'])
-                                                .documentElement!
-                                                .text,
-                                        style: const TextStyle(
-                                          fontSize: 16,
+                                    content: Container(
+                                      height: Get.height * 0.5,
+                                      child: Padding(
+                                        padding:
+                                            const EdgeInsets.only(top: 25.0),
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.start,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            RichText(
+                                              text: TextSpan(children: [
+                                                const TextSpan(
+                                                  text: "Project :",
+                                                  style: TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black,
+                                                    decoration: TextDecoration
+                                                        .underline,
+                                                  ),
+                                                ),
+                                                TextSpan(
+                                                  // ignore: prefer_interpolation_to_compose_strings
+                                                  text: " " + ProjectName,
+                                                  style: const TextStyle(
+                                                    color: Colors.black,
+                                                    fontSize: 18,
+                                                  ),
+                                                )
+                                              ]),
+                                            ),
+                                            const SizedBox(
+                                              height: 10,
+                                            ),
+                                            RichText(
+                                              text: TextSpan(children: [
+                                                const TextSpan(
+                                                  text: "description :",
+                                                  style: TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black,
+                                                    decoration: TextDecoration
+                                                        .underline,
+                                                  ),
+                                                ),
+                                                TextSpan(
+                                                  // ignore: prefer_interpolation_to_compose_strings, unrelated_type_equality_checks
+                                                  text: record['description'] ==
+                                                              false ||
+                                                          record['description'] ==
+                                                              ""
+                                                      ? " there's no description"
+                                                      : " ${parse(record['description']).documentElement!.text}",
+                                                  style: const TextStyle(
+                                                    color: Colors.black,
+                                                    fontSize: 18,
+                                                  ),
+                                                ),
+                                              ]),
+                                            ),
+                                            const SizedBox(
+                                              height: 10,
+                                            ),
+                                            RichText(
+                                              text: TextSpan(children: [
+                                                const TextSpan(
+                                                  text: "Assigned users :",
+                                                  style: TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.black,
+                                                    decoration: TextDecoration
+                                                        .underline,
+                                                  ),
+                                                ),
+                                                TextSpan(
+                                                  // ignore: prefer_interpolation_to_compose_strings, unrelated_type_equality_checks
+                                                  text: " "+record['user_ids'].length.toString()+" user(s)",
+                                                  style: const TextStyle(
+                                                    color: Colors.black,
+                                                    fontSize: 18,
+                                                  ),
+                                                ),
+                                              ]),
+                                            ),
+                                          ],
                                         ),
-                                        maxLines: 3,
                                       ),
                                     ));
                               });
@@ -336,11 +423,17 @@ class _TasksState extends State<Tasks> {
   @override
   void initState() {
     // TODO: implement initState
+    Future.delayed(Duration(milliseconds: 400), () {
+      setState(() {
+        ismanager;
+      });
+    });
   }
 
   var tasksList = [];
   String searchWord = "";
   TextEditingController searchController = TextEditingController();
+  bool ismanager = false;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -350,11 +443,20 @@ class _TasksState extends State<Tasks> {
           onRefresh: refresh,
           child: Column(
             children: [
+              SizedBox(
+                height: Get.height * 0.03,
+              ),
+              Text(
+                ProjectName,
+                style:
+                    GoogleFonts.lato(fontSize: 24, fontWeight: FontWeight.w500),
+                textAlign: TextAlign.center,
+              ),
               Container(
-                padding: EdgeInsets.only(top: Get.height * 0.05),
+                padding: EdgeInsets.only(top: Get.height * 0.0),
                 child: Padding(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 0, vertical: 50),
+                        const EdgeInsets.symmetric(horizontal: 0, vertical: 40),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 25.0,
@@ -416,8 +518,9 @@ class _TasksState extends State<Tasks> {
                   future: fetchtasks(),
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
+                      print("-----------------$managerId");
                       tasksList = snapshot.data;
-                      print('---------------------');
+                      ismanager = managerId == session.userId ? true : false;
 
                       List<dynamic> filteredData = tasksList
                           .where((element) => element['name']
@@ -443,7 +546,8 @@ class _TasksState extends State<Tasks> {
                                                 tasksList[0]['manager_id'][0] ==
                                                         session.userId
                                                     ? true
-                                                    : false,tasksList[0]['manager_id'][0])
+                                                    : false,
+                                                tasksList[0]['manager_id'][0])
                                             : builditem(
                                                 record,
                                                 SpeedDialDirection.up,
@@ -451,7 +555,8 @@ class _TasksState extends State<Tasks> {
                                                 tasksList[0]['manager_id'][0] ==
                                                         session.userId
                                                     ? true
-                                                    : false,tasksList[0]['manager_id'][0])
+                                                    : false,
+                                                tasksList[0]['manager_id'][0])
                                         : index == filteredData.length - 1
                                             ? builditem(
                                                 record,
@@ -460,7 +565,8 @@ class _TasksState extends State<Tasks> {
                                                 tasksList[0]['manager_id'][0] ==
                                                         session.userId
                                                     ? true
-                                                    : false,tasksList[0]['manager_id'][0])
+                                                    : false,
+                                                tasksList[0]['manager_id'][0])
                                             : builditem(
                                                 record,
                                                 SpeedDialDirection.down,
@@ -468,7 +574,8 @@ class _TasksState extends State<Tasks> {
                                                 tasksList[0]['manager_id'][0] ==
                                                         session.userId
                                                     ? true
-                                                    : false,tasksList[0]['manager_id'][0]));
+                                                    : false,
+                                                tasksList[0]['manager_id'][0]));
                               },
                             )
                           : const Text("there's no tasks !");
@@ -478,8 +585,7 @@ class _TasksState extends State<Tasks> {
                       }
                       return const SpinKitFadingFour(
                         color: Color.fromARGB(255, 120, 100, 156),
-                      
-                    );
+                      );
                     }
                   },
                 ),
@@ -488,20 +594,23 @@ class _TasksState extends State<Tasks> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          Get.to(AddTask());
-        },
-        backgroundColor: Colors.white,
-        elevation: 30,
-        label: const Text(
-          "Add",
-          style: TextStyle(color: Color.fromARGB(255, 120, 100, 156)),
-        ),
-        icon: const Icon(
-          Icons.add,
-          color: Color.fromARGB(255, 120, 100, 156),
-          size: 30,
+      floatingActionButton: Visibility(
+        visible: ismanager,
+        child: FloatingActionButton.extended(
+          onPressed: () async {
+            Get.to(AddTask());
+          },
+          backgroundColor: Colors.white,
+          elevation: 30,
+          label: const Text(
+            "Add",
+            style: TextStyle(color: Color.fromARGB(255, 120, 100, 156)),
+          ),
+          icon: const Icon(
+            Icons.add,
+            color: Color.fromARGB(255, 120, 100, 156),
+            size: 30,
+          ),
         ),
       ),
     );

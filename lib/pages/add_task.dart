@@ -344,28 +344,63 @@ class _AddTaskState extends State<AddTask> {
                                     GestureDetector(
                                       onTap: () async {
                                         if (taskName.text.isNotEmpty &&
-                                      taskDescription.text.isNotEmpty &&                                      
-                                      taskdeadline.text.isNotEmpty) {
+                                            taskDescription.text.isNotEmpty &&
+                                            taskdeadline.text.isNotEmpty) {
                                           if (DateTime.parse(taskdeadline.text)
-                                            .isAfter(DateTime.now()) && DateTime.parse(taskdeadline.text).isBefore(DateTime.parse(Project_deadline))) {
-                                          await addTask(
-                                              taskName.text,
-                                              taskDescription.text,
-                                              taskdeadline.text,
-                                              ids);
-                                          Fluttertoast.showToast(
-                                            msg: "Task added !",
-                                            toastLength: Toast.LENGTH_SHORT,
-                                          );
-                                          sendNotificaton(
-                                              "Task added",
-                                              "task '${taskName.text}' added in project : $ProjectName",
-                                              ProjectId.toString());
-                                          Navigator.pop(context);
+                                                  .isAfter(DateTime.now()) &&
+                                              DateTime.parse(taskdeadline.text)
+                                                  .isBefore(DateTime.parse(
+                                                      Project_deadline))) {
+                                            await addTask(
+                                                taskName.text,
+                                                taskDescription.text,
+                                                taskdeadline.text,
+                                                ids);
+                                            Fluttertoast.showToast(
+                                              msg: "Task added !",
+                                              toastLength: Toast.LENGTH_SHORT,
+                                            );
+                                            
+                                            for (var id in ids) {
+                                              print(id.toString());
+                                             sendNotificaton(
+                                                "Task added",
+                                                "task '${taskName.text}' added in project : $ProjectName",
+                                                id.toString());
+                                            }
+                                            if (!ids.contains(session.userId)) {
+                                              sendNotificaton(
+                                                "Task added",
+                                                "task '${taskName.text}' added in project : $ProjectName",
+                                                session.userIdtoString());
+                                            }
+                                            
+
+                                            Navigator.pop(context);
+                                          } else {
+                                            Flushbar(
+                                              title: "Error !",
+                                              message: "invalid deadline date",
+                                              duration:
+                                                  const Duration(seconds: 3),
+                                              padding: const EdgeInsets.all(20),
+                                              icon: const Icon(
+                                                Icons.warning,
+                                                size: 35,
+                                                color: Colors.white,
+                                              ),
+                                              flushbarPosition:
+                                                  FlushbarPosition.TOP,
+                                              backgroundColor:
+                                                  const Color.fromARGB(
+                                                      255, 120, 100, 156),
+                                            ).show(context);
+                                          }
                                         } else {
                                           Flushbar(
                                             title: "Error !",
-                                            message: "invalid deadline date",
+                                            message:
+                                                "fill all the fields Please !",
                                             duration:
                                                 const Duration(seconds: 3),
                                             padding: const EdgeInsets.all(20),
@@ -381,24 +416,6 @@ class _AddTaskState extends State<AddTask> {
                                                     255, 120, 100, 156),
                                           ).show(context);
                                         }
-                                        }else{
-                                          Flushbar(
-                                        title: "Error !",
-                                        message:
-                                            "fill all the fields Please !",
-                                        duration: const Duration(seconds: 3),
-                                        padding: const EdgeInsets.all(20),
-                                        icon: const Icon(
-                                          Icons.warning,
-                                          size: 35,
-                                          color: Colors.white,
-                                        ),
-                                        flushbarPosition: FlushbarPosition.TOP,
-                                        backgroundColor: const Color.fromARGB(
-                                            255, 120, 100, 156),
-                                      ).show(context);
-                                        }
-                                        
                                       },
                                       child: Container(
                                         padding: const EdgeInsets.symmetric(

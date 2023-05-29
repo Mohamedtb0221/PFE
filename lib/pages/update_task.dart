@@ -10,6 +10,8 @@ import '../components/my_formtextfield.dart';
 import 'controller/controller.dart';
 import 'home.dart';
 
+enum TaskState { ready, inProgress, blocked, none }
+
 Future<dynamic> fetchUsers() async {
   //await check();
   var res = await orpc.callKw({
@@ -119,6 +121,7 @@ class _UpdateTaskState extends State<UpdateTask> {
   TextEditingController taskdeadline = TextEditingController();
   List<String> _selectedItems = [];
   List<dynamic> ids = [];
+  TaskState _selectedState = TaskState.none;
 
   void _showMultiSelect() async {
     var res = await fetchUsers();
@@ -156,7 +159,7 @@ class _UpdateTaskState extends State<UpdateTask> {
 
   var record = Get.arguments;
   Future updateTask(String name, String description, String deadline,
-      List<dynamic> ids) async {
+      List<dynamic> ids,TaskState state) async {
     //await check();
     var res = await orpc.callKw({
       'model': 'project.task',
@@ -165,11 +168,15 @@ class _UpdateTaskState extends State<UpdateTask> {
         record['id'],
         {
           'name': name.isEmpty ? record['name'] : name,
-          'description':
-              description.isEmpty ? record['description'] : description,
+          'description': description.isEmpty
+              ? record['description'] == false
+                  ? ""
+                  : record['description']
+              : description,
           'date_deadline':
               deadline.isEmpty ? record['date_deadline'] : deadline,
-          'user_ids': ids.isEmpty ? record['user_ids'] : ids
+          'user_ids': ids.isEmpty ? record['user_ids'] : ids,
+          'kanban_state':state==TaskState.none ? record['kanban_state'] : state==TaskState.ready ? "done" : state==TaskState.inProgress ? "normal" : "blocked"
         }
       ],
       'domain': [],
@@ -179,7 +186,7 @@ class _UpdateTaskState extends State<UpdateTask> {
 
     return res;
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -281,6 +288,45 @@ class _UpdateTaskState extends State<UpdateTask> {
                           const SizedBox(
                             height: 30,
                           ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Radio<TaskState>(
+                                activeColor: Color.fromARGB(255, 120, 100, 156),
+                                value: TaskState.ready,
+                                groupValue: _selectedState,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _selectedState = value!;
+                                  });
+                                  print(_selectedState);
+                                },
+                              ),
+                              Text('Ready'),
+                              Radio<TaskState>(
+                                activeColor: Color.fromARGB(255, 120, 100, 156),
+                                value: TaskState.inProgress,
+                                groupValue: _selectedState,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _selectedState = value!;
+                                  });print(_selectedState);
+                                },
+                              ),
+                              Text('In Progress'),
+                              Radio<TaskState>(
+                                activeColor: Color.fromARGB(255, 120, 100, 156),
+                                value: TaskState.blocked,
+                                groupValue: _selectedState,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _selectedState = value!;
+                                  });print(value);
+                                },
+                              ),
+                              Text('Blocked'),
+                            ],
+                          ),
                           Padding(
                             padding: const EdgeInsets.all(30),
                             child: Column(
@@ -318,7 +364,7 @@ class _UpdateTaskState extends State<UpdateTask> {
                                       .toList(),
                                 ),
                                 SizedBox(
-                                  height: Get.height * 0.12,
+                                  height: Get.height * 0.1,
                                 ),
                                 Row(
                                   mainAxisAlignment:
@@ -346,43 +392,106 @@ class _UpdateTaskState extends State<UpdateTask> {
                                     ),
                                     GestureDetector(
                                       onTap: () async {
-                                        if (DateTime.parse(taskdeadline.text)
-                                                .isAfter(DateTime.now()) &&
-                                            DateTime.parse(taskdeadline.text)
-                                                .isBefore(DateTime.parse(
-                                                    Project_deadline))) {
+                                        if (taskdeadline.text.isEmpty) {
                                           await updateTask(
                                               taskName.text,
                                               taskDescription.text,
                                               taskdeadline.text,
-                                              ids);
+                                              ids,_selectedState);
                                           Fluttertoast.showToast(
                                             msg: "Task updated !",
                                             toastLength: Toast.LENGTH_SHORT,
                                           );
-                                          sendNotificaton(
-                                              "Task updated",
-                                              "task '${taskName.text.isEmpty ? record['name'] : taskName.text}' updated in project : $ProjectName",
-                                              ProjectId.toString());
+                                          //sendNotificaton(
+                                          //  "Task updated",
+                                          //"task '${taskName.text.isEmpty ? record['name'] : taskName.text}' updated in project : $ProjectName",
+                                          //ProjectId.toString());
+                                          if (ids.isEmpty) {
+                                            for (var id in record['user_ids']) {
+                                              print(id.toString());
+                                              if (taskName.text.isEmpty) {
+                                                sendNotificaton(
+                                                "Task updated",
+                                                "task '${record['name']}' updated in project : $ProjectName",
+                                                id.toString());
+                                              }else{
+                                             sendNotificaton(
+                                                "Task updated",
+                                                "task '${taskName.text}' updated in project : $ProjectName",
+                                                id.toString());
+                                            }}
+                                          }else{
+                                          for (var id in ids) {
+                                              print(id.toString());
+                                              if (taskName.text.isEmpty) {
+                                                sendNotificaton(
+                                                "Task updated",
+                                                "task '${record['name']}' updated in project : $ProjectName",
+                                                id.toString());
+                                              }else{
+                                             sendNotificaton(
+                                                "Task updated",
+                                                "task '${taskName.text}' updated in project : $ProjectName",
+                                                id.toString());
+                                            }}}
                                           Navigator.pop(context);
                                         } else {
-                                          Flushbar(
-                                            title: "Error !",
-                                            message: "invalid deadline date",
-                                            duration:
-                                                const Duration(seconds: 3),
-                                            padding: const EdgeInsets.all(20),
-                                            icon: const Icon(
-                                              Icons.warning,
-                                              size: 35,
-                                              color: Colors.white,
-                                            ),
-                                            flushbarPosition:
-                                                FlushbarPosition.TOP,
-                                            backgroundColor:
-                                                const Color.fromARGB(
-                                                    255, 120, 100, 156),
-                                          ).show(context);
+                                          if (DateTime.parse(taskdeadline.text)
+                                                  .isAfter(DateTime.now()) &&
+                                              DateTime.parse(taskdeadline.text)
+                                                  .isBefore(DateTime.parse(
+                                                      Project_deadline))) {
+                                            await updateTask(
+                                                taskName.text,
+                                                taskDescription.text,
+                                                taskdeadline.text,
+                                                ids,_selectedState);
+                                            Fluttertoast.showToast(
+                                              msg: "Task updated !",
+                                              toastLength: Toast.LENGTH_SHORT,
+                                            );
+                                            //sendNotificaton(
+                                            //  "Task updated",
+                                            //"task '${taskName.text.isEmpty ? record['name'] : taskName.text}' updated in project : $ProjectName",
+                                            //ProjectId.toString());
+                                            if (ids.isEmpty) {
+                                              for (var id in record['user_ids']) {
+                                              print(id.toString());
+                                              String taskname = taskName.text.isEmpty ? record['name'] : taskName.text;
+                                             sendNotificaton(
+                                                "Task Updated",
+                                                "task '$taskName' updated in project : $ProjectName",
+                                                id.toString());
+                                            }
+                                            }else{
+                                            for (var id in ids) {
+                                              print(id.toString());
+                                              String taskname = taskName.text.isEmpty ? record['name'] : taskName.text;
+                                             sendNotificaton(
+                                                "Task Updated",
+                                                "task '$taskName' updated in project : $ProjectName",
+                                                id.toString());
+                                            }}
+                                            Navigator.pop(context);
+                                          } else {
+                                            Flushbar(
+                                              title: "Error !",
+                                              message: "invalid deadline date",
+                                              duration:
+                                                  const Duration(seconds: 3),
+                                              padding: const EdgeInsets.all(20),
+                                              icon: const Icon(
+                                                Icons.warning,
+                                                size: 35,
+                                                color: Colors.white,
+                                              ),
+                                              flushbarPosition:
+                                                  FlushbarPosition.TOP,
+                                              backgroundColor:
+                                                  const Color.fromARGB(
+                                                      255, 120, 100, 156),
+                                            ).show(context);
+                                          }
                                         }
                                       },
                                       child: Container(

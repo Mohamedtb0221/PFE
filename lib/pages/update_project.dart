@@ -228,8 +228,13 @@ class _Update_projectState extends State<Update_project> {
                                 ),
                               ),
                               GestureDetector(
-                                onTap: () async {
-                                  
+                                onTap: () async {                                 
+                                  if (taskStart.text.isEmpty ) {
+                                    taskStart.text=record['date_start'];
+                                  }
+                                  if (taskdeadline.text.isEmpty) {
+                                    taskdeadline.text=record['date'];
+                                  }
                                   if (DateTime.parse(taskStart.text).isBefore(
                                             DateTime.parse(
                                                 taskdeadline.text)) &&
